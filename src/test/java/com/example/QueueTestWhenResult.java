@@ -4,13 +4,13 @@ import java.util.List;
 
 public class QueueTestWhenResult {
 
-    private final List<String> messages;
+    private final List<Message> messages;
     private final Exception resultedException;
     private final QueueService queueService;
     private final String queueName;
 
     public QueueTestWhenResult(
-            List<String> messages,
+            List<Message> messages,
             Exception resultedException,
             QueueService queueService,
             String queueName) {
@@ -21,7 +21,7 @@ public class QueueTestWhenResult {
         this.queueName = queueName;
     }
 
-    public List<String> getMessages() {
+    public List<Message> getMessages() {
         return messages;
     }
 

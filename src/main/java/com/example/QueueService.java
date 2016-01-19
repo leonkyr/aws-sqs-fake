@@ -1,6 +1,10 @@
 package com.example;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.SecureRandom;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public interface QueueService {
 
@@ -22,11 +26,22 @@ public interface QueueService {
   //   deletes a message from the queue that was received by pull().
   //
 
-    void push(String queueUrl, Integer delay, String message)
+    void push(String queueName, String message)
             throws InterruptedException, IOException;
 
-    String pull(String queueName)
+    Message pull(String queueName)
             throws InterruptedException, IOException;
 
-    void delete(String message);
+    void delete(String queueName, String message);
+
+    default long calculateVisibility(Long delayInSeconds) {
+        return (delayInSeconds != null) ? new Date().getTime() + TimeUnit.SECONDS.toMillis(delayInSeconds) : 0L;
+    }
+
+    default String generateMessageId() {
+        SecureRandom random = new SecureRandom();
+
+        return new BigInteger(130, random).toString(32);
+    }
 }
+

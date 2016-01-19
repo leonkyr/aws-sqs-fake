@@ -4,7 +4,7 @@ class DefaultQueueServiceFactory implements QueueServiceFactory {
 
     @Override
     public QueueService create(String flavor) {
-        QueueService result = null;
+        QueueService result;
 
         switch (flavor){
             case "local": result = new InMemoryQueueService();
@@ -12,6 +12,6 @@ class DefaultQueueServiceFactory implements QueueServiceFactory {
             default:
                 throw new IllegalArgumentException(String.format("flavor[=%s] is not supported", flavor));
         }
-        return null;
+        return result;
     }
 }

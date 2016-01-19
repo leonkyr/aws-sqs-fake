@@ -14,7 +14,7 @@ public final class QueueTestThen {
         this.whenResult = whenResult;
     }
 
-    private List<String> getMessages() {
+    private List<Message> getMessages() {
         return whenResult.getMessages();
     }
 
@@ -26,13 +26,13 @@ public final class QueueTestThen {
         return whenResult.getQueueService();
     }
 
-    public QueueTestThen assertSaveMessage(String message) {
+    public QueueTestThen assertSavedMessage(String message) {
 
         if (getMessages().size() == 0) {
             fail("There are no message pulled");
         }
 
-        Assert.assertEquals(getMessages().get(0), message);
+        Assert.assertSame(1, (int) getMessages().stream().filter(msg -> msg.equals(message)).count());
 
         return this;
     }
@@ -44,8 +44,29 @@ public final class QueueTestThen {
     public QueueTestThen assertQueueHasNotMessages() {
 
         try {
-            final String message = getQueueService().pull(whenResult.getQueueName());
+            final Message message = getQueueService().pull(whenResult.getQueueName());
             Assert.assertNull(message);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+
+        return this;
+    }
+
+    public QueueTestThen assertThereIsNoException() {
+        if (whenResult.getResultedException() != null) {
+            whenResult.getResultedException().printStackTrace();
+        }
+        Assert.assertNull(whenResult.getResultedException());
+
+        return this;
+    }
+
+    public QueueTestThen assertQueueHasMessages() {
+
+        try {
+            final Message message = getQueueService().pull(whenResult.getQueueName());
+            Assert.assertNotNull(message);
         } catch (Exception e) {
             fail(e.getMessage());
         }

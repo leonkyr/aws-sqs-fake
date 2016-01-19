@@ -6,8 +6,8 @@ import java.util.List;
 public final class QueueTestWhen {
     private final QueueService queueService;
     private final String queueName;
-    private Exception resultedException;
-    private List<String> messages;
+    private Exception resultedException = null;
+    private List<Message> messages;
 
     public QueueTestWhen(QueueService queueService, String queueName) {
 
@@ -15,20 +15,6 @@ public final class QueueTestWhen {
         this.queueName = queueName;
 
         this.messages = new ArrayList<>();
-    }
-
-    public QueueTestWhen put(String message) {
-
-        try {
-
-            getQueueService()
-                    .push(getQueueName(), 0, message);
-
-        } catch (Exception e) {
-            resultedException = e;
-        }
-
-        return this;
     }
 
     private QueueService getQueueService() {
@@ -39,7 +25,7 @@ public final class QueueTestWhen {
         return queueName;
     }
 
-    private List<String> getMessages() {
+    private List<Message> getMessages() {
         return messages;
     }
 
@@ -51,11 +37,26 @@ public final class QueueTestWhen {
         return this;
     }
 
+    public QueueTestWhen put(String message) {
+
+        try {
+
+            getQueueService()
+                    .push(getQueueName(), message);
+
+        } catch (Exception e) {
+            resultedException = e;
+        }
+
+        return this;
+    }
+
     public QueueTestWhen pullAndSave() {
         try {
-            messages.add(
-                    getQueueService()
-                            .pull(getQueueName()));
+            Message message = getQueueService()
+                    .pull(getQueueName());
+
+            messages.add(message);
         } catch (Exception e) {
             resultedException = e;
         }
@@ -67,7 +68,7 @@ public final class QueueTestWhen {
 
         try {
             getQueueService()
-                    .delete(message);
+                    .delete(getQueueName(), message);
         } catch (Exception e) {
             resultedException = e;
         }
@@ -83,6 +84,12 @@ public final class QueueTestWhen {
                 getQueueService(),
                 getQueueName());
         return new QueueTestThen(queueTestWhenResult);
+    }
+
+    public QueueTestWhen waitToPassDelay(long waitTime) throws InterruptedException {
+        Thread.sleep(waitTime);
+
+        return this;
     }
 }
 
