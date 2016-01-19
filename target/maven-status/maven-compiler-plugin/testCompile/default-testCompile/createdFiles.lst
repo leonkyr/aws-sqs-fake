@@ -1,0 +1,5 @@
+com/example/QueueTestGiven.class
+com/example/QueueTestWhenResult.class
+com/example/QueueTestThen.class
+com/example/QueueTestWhen.class
+com/example/MessageGenerator.class
