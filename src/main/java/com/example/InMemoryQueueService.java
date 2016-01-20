@@ -59,7 +59,7 @@ public class InMemoryQueueService implements QueueService, Closeable {
 
         queue.add(internalMessage);
 
-        logger.w("Added to the queue the message.");
+        logger.w("Added to the queue the message. Queue size = " + queue.size());
     }
 
     @Override

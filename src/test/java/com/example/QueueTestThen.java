@@ -14,8 +14,12 @@ public final class QueueTestThen {
         this.whenResult = whenResult;
     }
 
-    private List<Message> getMessages() {
-        return whenResult.getMessages();
+    private List<Message> getPulledMessages() {
+        return whenResult.getPulledMessages();
+    }
+
+    private List<String> getPushedMessages() {
+        return whenResult.getPushedMessages();
     }
 
     private Exception getResultedException() {
@@ -28,12 +32,12 @@ public final class QueueTestThen {
 
     public QueueTestThen assertSavedMessage(String message) {
 
-        if (getMessages().size() == 0) {
+        if (getPulledMessages().size() == 0) {
             fail("There are no message pulled");
         }
 
         Assert.assertSame("The message count is not the same.", 1,
-                (int) getMessages()
+                (int) getPulledMessages()
                         .stream()
                         .filter(msg -> msg.getBody().equals(message))
                         .count());
@@ -77,4 +81,14 @@ public final class QueueTestThen {
 
         return this;
     }
+
+    public QueueTestThen assertQueueHasMessageSize(int expectedQueueSize) {
+
+        Assert.assertSame("The message count is not the same.", expectedQueueSize,
+                getPushedMessages().size());
+
+        return this;
+    }
+
+
 }

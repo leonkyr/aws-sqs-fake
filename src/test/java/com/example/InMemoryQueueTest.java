@@ -1,9 +1,8 @@
 package com.example;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.fail;
 
 public class InMemoryQueueTest {
 
@@ -11,10 +10,16 @@ public class InMemoryQueueTest {
     private static final String QUEUE_NAME = "canva-rocks";
     private static final int MESSAGE_VISIBILITY_TIMEOUT_IN_SECONDS = 1;
     private static final int DEFAULT_WAIT_TIME_IN_MILLS = 3*1000;
+    private static final int PRODUCERS_COUNT = 10;
+    private static final int MESSAGE_COUNT_FOR_A_PRODUCER = 10;
     private MessageGenerator messageGenerator = new MessageGenerator();
 
     @Before
     public void before() {
+    }
+
+    @After
+    public void after() {
     }
 
     @Test
@@ -43,7 +48,6 @@ public class InMemoryQueueTest {
                 .and()
                 .assertQueueHasNotMessages();
     }
-
 
     @Test
     public void pushHappyPath3In2OutTest() {
@@ -150,7 +154,23 @@ public class InMemoryQueueTest {
 
     @Test
     public void multiplyProducersAndConsumersInDifferentThreadsHappyPath() {
-        // TODO:
-        fail("Not Impemented");
+
+        QueueTestGiven given = new QueueTestGiven();
+
+        given
+                .setEnvironmentFlavor(LOCAL)
+                .and()
+                .setQueueName(QUEUE_NAME).
+
+        when()
+                .putMultipleMessageSimultaneously(
+                        messageGenerator::generate,
+                        PRODUCERS_COUNT,
+                        MESSAGE_COUNT_FOR_A_PRODUCER).
+
+        then()
+                .assertThereIsNoException()
+                .and()
+                .assertQueueHasMessageSize(PRODUCERS_COUNT*MESSAGE_COUNT_FOR_A_PRODUCER);
     }
 }

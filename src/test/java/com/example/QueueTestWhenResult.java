@@ -4,25 +4,28 @@ import java.util.List;
 
 public class QueueTestWhenResult {
 
-    private final List<Message> messages;
+    private final List<Message> pulledMessages;
+    private final List<String> pushedMessages;
     private final Exception resultedException;
     private final QueueService queueService;
     private final String queueName;
 
     public QueueTestWhenResult(
-            List<Message> messages,
+            List<Message> pulledMessages,
+            List<String> pushedMessages,
             Exception resultedException,
             QueueService queueService,
             String queueName) {
 
-        this.messages = messages;
+        this.pulledMessages = pulledMessages;
+        this.pushedMessages = pushedMessages;
         this.resultedException = resultedException;
         this.queueService = queueService;
         this.queueName = queueName;
     }
 
-    public List<Message> getMessages() {
-        return messages;
+    public List<Message> getPulledMessages() {
+        return pulledMessages;
     }
 
     public Exception getResultedException() {
@@ -35,5 +38,9 @@ public class QueueTestWhenResult {
 
     public String getQueueName() {
         return queueName;
+    }
+
+    public List<String> getPushedMessages() {
+        return pushedMessages;
     }
 }
