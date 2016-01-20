@@ -3,8 +3,6 @@ package com.example;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 public interface QueueService {
 
@@ -29,13 +27,16 @@ public interface QueueService {
     void push(String queueName, String message)
             throws InterruptedException, IOException;
 
+    Message pull(String queueName, Integer visibilityTimeout)
+            throws InterruptedException, IOException;
+
     Message pull(String queueName)
             throws InterruptedException, IOException;
 
-    void delete(String queueName, String message);
+    void delete(String queueName, String receiptHandle);
 
-    default long calculateVisibility(Long delayInSeconds) {
-        return (delayInSeconds != null) ? new Date().getTime() + TimeUnit.SECONDS.toMillis(delayInSeconds) : 0L;
+    default long calculateVisibility(Integer visibilityTimeoutInSeconds) {
+        return visibilityTimeoutInSeconds * 1000;
     }
 
     default String generateMessageId() {

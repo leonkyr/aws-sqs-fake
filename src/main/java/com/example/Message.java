@@ -1,41 +1,20 @@
 package com.example;
 
-public class Message {
+import java.math.BigInteger;
+import java.security.SecureRandom;
 
-    private final String messageId;
-    private final String receiptHandle;
-    private final String body;
-    private final String MD5OfBody;
+public interface Message {
+    String getMessageId();
 
+    String getReceiptHandle();
 
-    private Message(String messageId, String receiptHandle, String body, String MD5OfBody) {
-        this.messageId = messageId;
-        this.receiptHandle = receiptHandle;
-        this.body = body;
-        this.MD5OfBody = MD5OfBody;
-    }
+    String getBody();
 
-    public String getMessageId() {
-        return messageId;
-    }
+    String getMD5OfBody();
 
-    public String getReceiptHandle() {
-        return receiptHandle;
-    }
+    default String generateReceiptHandle(){
+        SecureRandom random = new SecureRandom();
 
-    public String getBody() {
-        return body;
-    }
-
-    public String getMD5OfBody() {
-        return MD5OfBody;
-    }
-
-    public static Message create(String messageId, String receiptHandle, String body){
-        return new Message(messageId, receiptHandle, body, "");
-    }
-
-    public static Message create(String messageId, String receiptHandle, String body, String MD5OfBody){
-        return new Message(messageId, receiptHandle, body, MD5OfBody);
+        return new BigInteger(130, random).toString(32);
     }
 }

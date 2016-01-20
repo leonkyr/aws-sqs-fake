@@ -6,7 +6,9 @@ import org.junit.Test;
 public class InMemoryQueueTest {
 
     private static final String LOCAL = "local";
-    private static final String HAPPY_PATH_BASIC_TEST_QUEUE = "q-01";
+    private static final String QUEUE_NAME = "canva-rocks";
+    private static final int MESSAGE_VISIBILITY_TIMEOUT_IN_SECONDS = 1;
+    private static final int DEFAULT_WAIT_TIME_IN_MILLS = 10*1000;
     private MessageGenerator messageGenerator = new MessageGenerator();
 
     @Before
@@ -23,7 +25,7 @@ public class InMemoryQueueTest {
         given
                 .setEnvironmentFlavor(LOCAL)
                 .and()
-                .setQueueName(HAPPY_PATH_BASIC_TEST_QUEUE).
+                .setQueueName(QUEUE_NAME).
 
         when()
                 .put(message)
@@ -53,7 +55,7 @@ public class InMemoryQueueTest {
         given
                 .setEnvironmentFlavor(LOCAL)
                 .and()
-                .setQueueName(HAPPY_PATH_BASIC_TEST_QUEUE).
+                .setQueueName(QUEUE_NAME).
 
         when()
                 .put(message1)
@@ -90,14 +92,14 @@ public class InMemoryQueueTest {
         given
                 .setEnvironmentFlavor(LOCAL)
                 .and()
-                .setQueueName(HAPPY_PATH_BASIC_TEST_QUEUE).
+                .setQueueName(QUEUE_NAME).
 
         when()
                 .put(message)
                 .and()
-                .pullAndSave()
+                .pullAndSave(MESSAGE_VISIBILITY_TIMEOUT_IN_SECONDS)
                 .and()
-                .waitToPassDelay(500).
+                .waitToPassDelay(DEFAULT_WAIT_TIME_IN_MILLS).
 
         then()
                 .assertThereIsNoException()

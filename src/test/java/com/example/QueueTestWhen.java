@@ -64,11 +64,20 @@ public final class QueueTestWhen {
         return this;
     }
 
-    public QueueTestWhen delete(String message) {
+    public QueueTestWhen delete(String messageBody) {
+
+        Message messageToDelete = messages
+                .stream()
+                .filter(msg -> msg.getBody().equals(messageBody))
+                .findFirst()
+                .orElseGet(() -> null);
 
         try {
-            getQueueService()
-                    .delete(getQueueName(), message);
+            if (messageToDelete != null) {
+                getQueueService()
+                        .delete(getQueueName(), messageToDelete.getReceiptHandle());
+            }
+
         } catch (Exception e) {
             resultedException = e;
         }
@@ -86,8 +95,21 @@ public final class QueueTestWhen {
         return new QueueTestThen(queueTestWhenResult);
     }
 
-    public QueueTestWhen waitToPassDelay(long waitTime) throws InterruptedException {
-        Thread.sleep(waitTime);
+    public QueueTestWhen waitToPassDelay(long waitTimeInMills) throws InterruptedException {
+        Thread.sleep(waitTimeInMills);
+
+        return this;
+    }
+
+    public QueueTestWhen pullAndSave(int visibilityTimeout) {
+        try {
+            Message message = getQueueService()
+                    .pull(getQueueName(), visibilityTimeout);
+
+            messages.add(message);
+        } catch (Exception e) {
+            resultedException = e;
+        }
 
         return this;
     }

@@ -32,7 +32,11 @@ public final class QueueTestThen {
             fail("There are no message pulled");
         }
 
-        Assert.assertSame(1, (int) getMessages().stream().filter(msg -> msg.equals(message)).count());
+        Assert.assertSame("The message was not found.", 1,
+                (int) getMessages()
+                        .stream()
+                        .filter(msg -> msg.getBody().equals(message))
+                        .count());
 
         return this;
     }
@@ -66,7 +70,7 @@ public final class QueueTestThen {
 
         try {
             final Message message = getQueueService().pull(whenResult.getQueueName());
-            Assert.assertNotNull(message);
+            Assert.assertNotNull("Queue does not have messages", message);
         } catch (Exception e) {
             fail(e.getMessage());
         }
