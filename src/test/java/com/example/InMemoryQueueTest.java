@@ -8,7 +8,7 @@ public class InMemoryQueueTest {
     private static final String LOCAL = "local";
     private static final String QUEUE_NAME = "canva-rocks";
     private static final int MESSAGE_VISIBILITY_TIMEOUT_IN_SECONDS = 1;
-    private static final int DEFAULT_WAIT_TIME_IN_MILLS = 10*1000;
+    private static final int DEFAULT_WAIT_TIME_IN_MILLS = 3*1000;
     private MessageGenerator messageGenerator = new MessageGenerator();
 
     @Before
@@ -80,6 +80,45 @@ public class InMemoryQueueTest {
                 .assertSavedMessage(message2)
                 .and()
                 .assertQueueHasMessages();
+    }
+
+    @Test
+    public void pushHappyPath2In2OutTest() {
+
+        QueueTestGiven given = new QueueTestGiven();
+
+        String message1 = messageGenerator.generate();
+        String message2 = messageGenerator.generate();
+
+        System.out.println("message1 = " + message1);
+        System.out.println("message2 = " + message2);
+
+        given
+                .setEnvironmentFlavor(LOCAL)
+                .and()
+                .setQueueName(QUEUE_NAME).
+
+        when()
+                .put(message1)
+                .and()
+                .put(message2)
+                .and()
+                .pullAndSave()
+                .and()
+                .pullAndSave()
+                .and()
+                .delete(message1)
+                .and()
+                .delete(message2).
+
+        then()
+                .assertThereIsNoException()
+                .and()
+                .assertSavedMessage(message1)
+                .and()
+                .assertSavedMessage(message2)
+                .and()
+                .assertQueueHasNotMessages();
     }
 
     @Test

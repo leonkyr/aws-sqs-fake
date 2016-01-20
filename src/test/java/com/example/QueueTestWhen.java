@@ -7,14 +7,16 @@ public final class QueueTestWhen {
     private final QueueService queueService;
     private final String queueName;
     private Exception resultedException = null;
-    private List<Message> messages;
+    private List<Message> pulledMessages;
+    private List<String> pushedMessages;
 
     public QueueTestWhen(QueueService queueService, String queueName) {
 
         this.queueService = queueService;
         this.queueName = queueName;
 
-        this.messages = new ArrayList<>();
+        this.pulledMessages = new ArrayList<>();
+        this.pushedMessages = new ArrayList<>();
     }
 
     private QueueService getQueueService() {
@@ -25,9 +27,14 @@ public final class QueueTestWhen {
         return queueName;
     }
 
-    private List<Message> getMessages() {
-        return messages;
+    private List<Message> getPulledMessages() {
+        return pulledMessages;
     }
+
+    public List<String> getPushedMessages() {
+        return pushedMessages;
+    }
+
 
     private Exception getResultedException() {
         return resultedException;
@@ -44,6 +51,8 @@ public final class QueueTestWhen {
             getQueueService()
                     .push(getQueueName(), message);
 
+            getPushedMessages().add(message);
+
         } catch (Exception e) {
             resultedException = e;
         }
@@ -56,7 +65,8 @@ public final class QueueTestWhen {
             Message message = getQueueService()
                     .pull(getQueueName());
 
-            messages.add(message);
+            System.out.println("PULLED message = " + message);
+            getPulledMessages().add(message);
         } catch (Exception e) {
             resultedException = e;
         }
@@ -66,7 +76,7 @@ public final class QueueTestWhen {
 
     public QueueTestWhen delete(String messageBody) {
 
-        Message messageToDelete = messages
+        Message messageToDelete = getPulledMessages()
                 .stream()
                 .filter(msg -> msg.getBody().equals(messageBody))
                 .findFirst()
@@ -74,8 +84,11 @@ public final class QueueTestWhen {
 
         try {
             if (messageToDelete != null) {
+                System.out.println("messageToDelete.getReceiptHandle() = " + messageToDelete.getReceiptHandle());
                 getQueueService()
-                        .delete(getQueueName(), messageToDelete.getReceiptHandle());
+                        .delete(
+                                getQueueName(),
+                                messageToDelete.getReceiptHandle());
             }
 
         } catch (Exception e) {
@@ -88,7 +101,7 @@ public final class QueueTestWhen {
 
     public QueueTestThen then() {
         final QueueTestWhenResult queueTestWhenResult = new QueueTestWhenResult(
-                getMessages(),
+                getPulledMessages(),
                 getResultedException(),
                 getQueueService(),
                 getQueueName());
@@ -106,7 +119,7 @@ public final class QueueTestWhen {
             Message message = getQueueService()
                     .pull(getQueueName(), visibilityTimeout);
 
-            messages.add(message);
+            pulledMessages.add(message);
         } catch (Exception e) {
             resultedException = e;
         }

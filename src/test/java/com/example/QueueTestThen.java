@@ -32,7 +32,7 @@ public final class QueueTestThen {
             fail("There are no message pulled");
         }
 
-        Assert.assertSame("The message was not found.", 1,
+        Assert.assertSame("The message count is not the same.", 1,
                 (int) getMessages()
                         .stream()
                         .filter(msg -> msg.getBody().equals(message))

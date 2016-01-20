@@ -54,4 +54,15 @@ public class DefaultMessage implements Message {
     public static DefaultMessage create(String messageId, String receiptHandle, String body, String MD5OfBody){
         return new DefaultMessage(messageId, receiptHandle, body, MD5OfBody);
     }
+
+    @Override
+    public String toString() {
+        return "DefaultMessage{" +
+                "messageId='" + messageId + '\'' +
+                ", receiptHandle='" + receiptHandle + '\'' +
+                ", body='" + body + '\'' +
+                ", MD5OfBody='" + MD5OfBody + '\'' +
+                ", visibilityTimeout=" + visibilityTimeout +
+                '}';
+    }
 }
