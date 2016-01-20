@@ -4,7 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class InMemoryQueueTest {
+public class SqsQueueTest {
 
     private static final String QUEUE_NAME = "canva-rocks";
     private static final int MESSAGE_VISIBILITY_TIMEOUT_IN_SECONDS = 1;
@@ -29,18 +29,18 @@ public class InMemoryQueueTest {
         String message = messageGenerator.generate();
 
         given
-                .setEnvironmentFlavor(DefaultQueueServiceFactory.FLAVOR_LOCAL)
+                .setEnvironmentFlavor(DefaultQueueServiceFactory.FLAVOR_PRODUCTION)
                 .and()
                 .setQueueName(QUEUE_NAME).
 
-        when()
+                when()
                 .put(message)
                 .and()
                 .pullAndSave()
                 .and()
                 .delete(message).
 
-        then()
+                then()
                 .assertThereIsNoException()
                 .and()
                 .assertSavedMessage(message)
@@ -58,7 +58,7 @@ public class InMemoryQueueTest {
         String message3 = messageGenerator.generate();
 
         given
-                .setEnvironmentFlavor(DefaultQueueServiceFactory.FLAVOR_LOCAL)
+                .setEnvironmentFlavor(DefaultQueueServiceFactory.FLAVOR_PRODUCTION)
                 .and()
                 .setQueueName(QUEUE_NAME).
 
@@ -99,7 +99,7 @@ public class InMemoryQueueTest {
         System.out.println("message2 = " + message2);
 
         given
-                .setEnvironmentFlavor(DefaultQueueServiceFactory.FLAVOR_LOCAL)
+                .setEnvironmentFlavor(DefaultQueueServiceFactory.FLAVOR_PRODUCTION)
                 .and()
                 .setQueueName(QUEUE_NAME).
 
@@ -134,7 +134,7 @@ public class InMemoryQueueTest {
         String message = messageGenerator.generate();
 
         given
-                .setEnvironmentFlavor(DefaultQueueServiceFactory.FLAVOR_LOCAL)
+                .setEnvironmentFlavor(DefaultQueueServiceFactory.FLAVOR_PRODUCTION)
                 .and()
                 .setQueueName(QUEUE_NAME).
 
@@ -157,7 +157,7 @@ public class InMemoryQueueTest {
         QueueTestGiven given = new QueueTestGiven();
 
         given
-                .setEnvironmentFlavor(DefaultQueueServiceFactory.FLAVOR_LOCAL)
+                .setEnvironmentFlavor(DefaultQueueServiceFactory.FLAVOR_PRODUCTION)
                 .and()
                 .setQueueName(QUEUE_NAME).
 

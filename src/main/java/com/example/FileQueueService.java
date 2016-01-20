@@ -5,7 +5,7 @@ import java.io.IOException;
 public class FileQueueService implements QueueService {
 
     @Override
-    public void push(String queueName, String message) throws InterruptedException, IOException {
+    public void push(String queueName, String messageBody) throws InterruptedException, IOException {
 
     }
 

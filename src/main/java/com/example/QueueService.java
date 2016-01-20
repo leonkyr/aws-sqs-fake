@@ -24,7 +24,7 @@ public interface QueueService {
   //   deletes a message from the queue that was received by pull().
   //
 
-    void push(String queueName, String message)
+    void push(String queueName, String messageBody)
             throws InterruptedException, IOException;
 
     Message pull(String queueName, Integer visibilityTimeout)
