@@ -1,17 +1,29 @@
-//package com.example;
-//
-//import java.io.File;
-//import java.io.FileWriter;
-//import java.io.IOException;
-//import java.io.PrintWriter;
-//import java.util.Date;
-//import java.util.concurrent.TimeUnit;
-//
-//public class FileQueueService implements QueueService {
-//  //
-//  // Task 3: Implement me if you have time.
-//  //
-//
+package com.example;
+
+import java.io.IOException;
+
+public class FileQueueService implements QueueService {
+
+    @Override
+    public void push(String queueName, String message) throws InterruptedException, IOException {
+
+    }
+
+    @Override
+    public Message pull(String queueName, Integer visibilityTimeout) throws InterruptedException, IOException {
+        return null;
+    }
+
+    @Override
+    public Message pull(String queueName) throws InterruptedException, IOException {
+        return null;
+    }
+
+    @Override
+    public void delete(String queueName, String receiptHandle) {
+
+    }
+
 //    private void lock(File lock) throws InterruptedException {
 //        while (!lock.mkdir()) {
 //            Thread.sleep(50);
@@ -51,4 +63,4 @@
 //    private String fromUrl(String queueUrl) {
 //        return null;
 //    }
-//}
+}

@@ -12,20 +12,25 @@ public class InMemoryQueueService implements QueueService, Closeable {
 
     private final Map<String, ConcurrentLinkedQueue<DefaultMessage>> queues =
             new ConcurrentHashMap<>();
+
+    // Maybe not the optimal struct for queue, especially if the list is there -> O(N)
     private final Map<String, ConcurrentLinkedQueue<DefaultMessage>> queuesWithPolledMessages =
             new ConcurrentHashMap<>();
 
     private final HashCalculator hashCalculator;
+    private final Logger logger;
     private final ExecutorService executorService;
 
-    public InMemoryQueueService(HashCalculator hashCalculator) {
+    // constructor for DI Container (f.e. Spring)
+    public InMemoryQueueService(HashCalculator hashCalculator, Logger logger) {
         this.hashCalculator = hashCalculator;
+        this.logger = logger;
 
         this.executorService = Executors.newSingleThreadExecutor();
     }
 
     public InMemoryQueueService(){
-        this(new MD5HashCalculator());
+        this(new MD5HashCalculator(), new SimpleConsoleLogger());
     }
 
     public HashCalculator getHashCalculator() {
@@ -36,7 +41,7 @@ public class InMemoryQueueService implements QueueService, Closeable {
     public void push(String queueName, String messageBody)
             throws InterruptedException, IOException {
 
-        System.out.println("push -> queueName = [" + queueName + "], messageBoy = [" + messageBody + "]");
+        logger.w("push -> queueName = [" + queueName + "], messageBoy = [" + messageBody + "]");
         // message has the following struct
         // ATTEMPT_TO_DEQUEUE : VISIBLE_FROM_IN_MILLISECONDS : MESSAGE
 
@@ -48,9 +53,13 @@ public class InMemoryQueueService implements QueueService, Closeable {
                         messageBody,
                         getHashCalculator().calculate(messageBody));
 
-        System.out.println("PUSHED internalMessage = " + internalMessage);
+        logger.w("PUSHED internalMessage = " + internalMessage);
 
-        queues.computeIfAbsent(queueName, q -> new ConcurrentLinkedQueue<>()).add(internalMessage);
+        ConcurrentLinkedQueue<DefaultMessage> queue = getOrCreateQueueByName(queueName);
+
+        queue.add(internalMessage);
+
+        logger.w("Added to the queue the message.");
     }
 
     @Override
@@ -65,92 +74,126 @@ public class InMemoryQueueService implements QueueService, Closeable {
             throws InterruptedException, IOException {
         // we don't care that a consumer make consume multiple message at the same time
 
-        System.out.println("pull -> queueName = [" + queueName + "]");
+        logger.w("pull -> queueName = [" + queueName + "]");
 
         final ConcurrentLinkedQueue<DefaultMessage> queue =
-                queues.getOrDefault(queueName, new ConcurrentLinkedQueue<>());
+                getQueueByName(queueName);
+
+        if (queue.isEmpty()) {
+            logger.w("There are not messages in the queue. leaving");
+            // I could use NullMessage class also..
+            return null;
+        }
+
         final ConcurrentLinkedQueue<DefaultMessage> queueWithPolled =
-                queuesWithPolledMessages.getOrDefault(queueName, new ConcurrentLinkedQueue<>());
+                getQueuesWithPolledMessagesByName(queueName);
 
         final DefaultMessage internalMessage = queue.poll();
+        logger.w("internalMessage = " + internalMessage);
 
-        if (internalMessage == null) {
-            return null;
-        } else {
-            final long timeout = this.calculateVisibility(visibilityTimeout);
-            internalMessage.setVisibilityTimeout(timeout);
+        final long timeout = setVisibilityTimeoutToMessage(visibilityTimeout, internalMessage);
+        final String receiptHandle = setReceiptHandleForMessage(internalMessage);
 
-            System.out.println("timeout = " + timeout);
+        Future<?> task = executorService.submit(() ->
+                verifyVisibilityTimeoutOnDelete(receiptHandle, queueWithPolled));
 
-            internalMessage.setReceiptHandle();
-            final String receiptHandle = internalMessage.getReceiptHandle();
+        waitTillTaskExecutedAsync(queue, queueWithPolled, internalMessage, timeout, task);
 
-            Future<?> task = executorService.submit(() -> {
+        queueWithPolled.add(internalMessage);
 
-                while (!Thread.currentThread().isInterrupted()) {
-                    System.out.println("receiptHandle = " + receiptHandle);
-
-                    DefaultMessage msg = queueWithPolled
-                            .stream()
-                            .filter(m -> m.getReceiptHandle().equals(receiptHandle))
-                            .findFirst()
-                            .orElseGet(() -> null);
-
-                    // message was delete
-                    if (msg == null) {
-                        System.out.println("Message is null");
-                        return;
-                    } else {
-                        System.out.println("let's wait and check again");
-                        // let's wait and check again
-                        try {
-                            Thread.sleep(DEFAULT_RETRY_TIMEOUT_IN_MILLS);
-                        } catch (InterruptedException e) {
-                            // I was asked to stop
-                            return;
-                        }
-                    }
-                }
-
-            });
-
-            new Thread(() -> {
-                try {
-                    task.get(timeout, TimeUnit.MILLISECONDS);
-                    System.out.println("Message was deleted");
-                } catch (ExecutionException | InterruptedException e) {
-                    e.printStackTrace();
-                } catch (TimeoutException e) {
-                    e.printStackTrace();
-                    task.cancel(true);
-                    // re-add message at the beginning
-                    queueWithPolled.remove(internalMessage);
-                    queue.add(internalMessage);
-                    System.out.println("Message has been put back because it was not deleted.");
-                }
-            }).start();
-
-            queueWithPolled.add(internalMessage);
-
-            System.out.println("PULLED internalMessage = " + internalMessage);
-            return internalMessage;
-        }
+        logger.w("PULLED internalMessage = " + internalMessage);
+        return internalMessage;
     }
 
     @Override
     public void delete(String queueName, String receiptHandle) {
-        System.out.println("delete -> queueName = [" + queueName + "], receiptHandle = [" + receiptHandle + "]");
+        logger.w("delete -> queueName = [" + queueName + "], receiptHandle = [" + receiptHandle + "]");
 
-        final ConcurrentLinkedQueue<DefaultMessage> queue =
-                queues.getOrDefault(queueName, new ConcurrentLinkedQueue<>());
         final ConcurrentLinkedQueue<DefaultMessage> queueWithPolled =
-                queuesWithPolledMessages.getOrDefault(queueName, new ConcurrentLinkedQueue<>());
+                getQueuesWithPolledMessagesByName(queueName);
 
-        System.out.println(">1>>> queue.size() = " + queue.size());
-        System.out.println(">1>>> queueWithPolled.size() = " + queueWithPolled.size());
+        logger.w("Polled queue size BEFORE delete is " + queueWithPolled.size());
         queueWithPolled.removeIf(msg -> msg.getReceiptHandle().equals(receiptHandle));
-        System.out.println(">2>>> queue.size() = " + queue.size());
-        System.out.println(">2>>> queueWithPolled.size() = " + queueWithPolled.size());
+        logger.w("Polled queue size AFTER delete is " + queueWithPolled.size());
+    }
+
+    private ConcurrentLinkedQueue<DefaultMessage> getOrCreateQueueByName(String queueName) {
+        return queues.computeIfAbsent(queueName, q -> new ConcurrentLinkedQueue<>());
+    }
+
+    private ConcurrentLinkedQueue<DefaultMessage> getQueueByName(String queueName) {
+        return queues.getOrDefault(queueName, new ConcurrentLinkedQueue<>());
+    }
+
+    private ConcurrentLinkedQueue<DefaultMessage> getQueuesWithPolledMessagesByName(String queueName) {
+        return queuesWithPolledMessages.getOrDefault(queueName, new ConcurrentLinkedQueue<>());
+    }
+
+    private String setReceiptHandleForMessage(DefaultMessage internalMessage) {
+        internalMessage.setReceiptHandle();
+        return internalMessage.getReceiptHandle();
+    }
+
+    private long setVisibilityTimeoutToMessage(Integer visibilityTimeout, DefaultMessage internalMessage) {
+        final long timeout = this.calculateVisibility(visibilityTimeout);
+        internalMessage.setVisibilityTimeout(timeout);
+        return timeout;
+    }
+
+    private void waitTillTaskExecutedAsync(
+            final ConcurrentLinkedQueue<DefaultMessage> queue,
+            final ConcurrentLinkedQueue<DefaultMessage> queueWithPolled,
+            final DefaultMessage internalMessage,
+            final long timeout,
+            Future<?> task) {
+
+        // simple way to do async wait..
+        new Thread(() -> {
+            try {
+                task.get(timeout, TimeUnit.MILLISECONDS);
+                logger.w("Message was deleted");
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            } catch (TimeoutException e) {
+                e.printStackTrace();
+                task.cancel(true);
+                // re-add message at the beginning
+                queueWithPolled.remove(internalMessage);
+                queue.add(internalMessage);
+                logger.w("Message has been put back because it was not deleted.");
+            }
+        }).start();
+
+    }
+
+    private void verifyVisibilityTimeoutOnDelete(
+            final String receiptHandle,
+            final ConcurrentLinkedQueue<DefaultMessage> queueWithPolled) {
+
+        while (!Thread.currentThread().isInterrupted()) {
+            logger.w("receiptHandle = " + receiptHandle);
+
+            DefaultMessage msg = queueWithPolled
+                    .stream()
+                    .filter(m -> m.getReceiptHandle().equals(receiptHandle))
+                    .findFirst()
+                    .orElseGet(() -> null);
+
+            // message was delete
+            if (msg != null) {
+                logger.w("let's wait and check again");
+                // let's wait and check again
+                try {
+                    Thread.sleep(DEFAULT_RETRY_TIMEOUT_IN_MILLS);
+                } catch (InterruptedException e) {
+                    // I was asked to stop
+                    return;
+                }
+            } else {
+                logger.w("Message is null");
+                return;
+            }
+        }
     }
 
     @Override
@@ -158,4 +201,3 @@ public class InMemoryQueueService implements QueueService, Closeable {
         executorService.shutdown();
     }
 }
-

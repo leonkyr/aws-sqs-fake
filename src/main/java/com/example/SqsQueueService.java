@@ -1,16 +1,33 @@
-//package com.example;
-//
-//import com.amazonaws.services.sqs.AmazonSQSClient;
-//
-//public class SqsQueueService implements QueueService {
-//  //
-//  // Task 4: Optionally implement parts of me.
-//  //
-//  // This file is a placeholder for an AWS-backed implementation of QueueService.  It is included
-//  // primarily so you can quickly assess your choices for method signatures in QueueService in
-//  // terms of how well they map to the implementation intended for a production environment.
-//  //
-//
-//  public SqsQueueService(AmazonSQSClient sqsClient) {
-//  }
-//}
+package com.example;
+
+import com.amazonaws.services.sqs.AmazonSQSClient;
+
+import java.io.IOException;
+
+public class SqsQueueService implements QueueService {
+    private final AmazonSQSClient sqsClient;
+
+    public SqsQueueService(AmazonSQSClient sqsClient) {
+        this.sqsClient = sqsClient;
+    }
+
+    @Override
+    public void push(String queueName, String message) throws InterruptedException, IOException {
+
+    }
+
+    @Override
+    public Message pull(String queueName, Integer visibilityTimeout) throws InterruptedException, IOException {
+        return null;
+    }
+
+    @Override
+    public Message pull(String queueName) throws InterruptedException, IOException {
+        return null;
+    }
+
+    @Override
+    public void delete(String queueName, String receiptHandle) {
+
+    }
+}

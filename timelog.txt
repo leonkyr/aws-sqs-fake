@@ -1,0 +1,3 @@
+19.01 - 2h -> read article, read AWS SQS API docs, created tests, defined interface and a bit of implementation
+20.01 - 2h -> Finished InMemory+Tests
+20.01 - .5j -> refactored InMemoryQueue

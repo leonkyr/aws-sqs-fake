@@ -3,6 +3,8 @@ package com.example;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.fail;
+
 public class InMemoryQueueTest {
 
     private static final String LOCAL = "local";
@@ -144,5 +146,11 @@ public class InMemoryQueueTest {
                 .assertThereIsNoException()
                 .and()
                 .assertQueueHasMessages();
+    }
+
+    @Test
+    public void multiplyProducersAndConsumersInDifferentThreadsHappyPath() {
+        // TODO:
+        fail("Not Impemented");
     }
 }
