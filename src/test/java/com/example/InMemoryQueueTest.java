@@ -1,5 +1,7 @@
 package com.example;
 
+import com.example.helpers.MessageGenerator;
+import com.example.helpers.QueueTestGiven;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +13,8 @@ public class InMemoryQueueTest {
     private static final int DEFAULT_WAIT_TIME_IN_MILLS = 3*1000;
     private static final int PRODUCERS_COUNT = 10;
     private static final int MESSAGE_COUNT_FOR_A_PRODUCER = 10;
+    private static final int CONSUMERS_COUNT = 10;
+    private static final int MESSAGE_COUNT_FOR_A_CONSUMER = 10;
     private MessageGenerator messageGenerator = new MessageGenerator();
 
     @Before
@@ -43,7 +47,7 @@ public class InMemoryQueueTest {
         then()
                 .assertThereIsNoException()
                 .and()
-                .assertSavedMessage(message)
+                .assertSavedAndDeletedMessage(message)
                 .and()
                 .assertQueueHasNotMessages();
     }
@@ -80,9 +84,9 @@ public class InMemoryQueueTest {
         then()
                 .assertThereIsNoException()
                 .and()
-                .assertSavedMessage(message1)
+                .assertSavedAndDeletedMessage(message1)
                 .and()
-                .assertSavedMessage(message2)
+                .assertSavedAndDeletedMessage(message2)
                 .and()
                 .assertQueueHasMessages();
     }
@@ -119,9 +123,9 @@ public class InMemoryQueueTest {
         then()
                 .assertThereIsNoException()
                 .and()
-                .assertSavedMessage(message1)
+                .assertSavedAndDeletedMessage(message1)
                 .and()
-                .assertSavedMessage(message2)
+                .assertSavedAndDeletedMessage(message2)
                 .and()
                 .assertQueueHasNotMessages();
     }
@@ -152,7 +156,7 @@ public class InMemoryQueueTest {
     }
 
     @Test
-    public void multiplyProducersAndConsumersInDifferentThreadsHappyPath() {
+    public void multiplyProducersInDifferentThreadsHappyPath() {
 
         QueueTestGiven given = new QueueTestGiven();
 
@@ -162,7 +166,7 @@ public class InMemoryQueueTest {
                 .setQueueName(QUEUE_NAME).
 
         when()
-                .putMultipleMessageSimultaneously(
+                .putMultipleMessagesSimultaneously(
                         messageGenerator::generate,
                         PRODUCERS_COUNT,
                         MESSAGE_COUNT_FOR_A_PRODUCER).
@@ -171,5 +175,31 @@ public class InMemoryQueueTest {
                 .assertThereIsNoException()
                 .and()
                 .assertQueueHasMessageSize(PRODUCERS_COUNT*MESSAGE_COUNT_FOR_A_PRODUCER);
+    }
+
+    @Test
+    public void multipleConsumersInDifferThreadHappyPath() {
+        QueueTestGiven given = new QueueTestGiven();
+
+        final int messageCount = PRODUCERS_COUNT*MESSAGE_COUNT_FOR_A_PRODUCER;
+        given
+                .setEnvironmentFlavor(DefaultQueueServiceFactory.FLAVOR_LOCAL)
+                .and()
+                .setQueueName(QUEUE_NAME).
+
+        when()
+                .putMultipleMessages(
+                        messageGenerator::generate,
+                        messageCount)
+                .and()
+                .consumeMultipleMessageSimultaneously(
+                        CONSUMERS_COUNT,
+                        MESSAGE_COUNT_FOR_A_CONSUMER
+                ).
+
+        then()
+                .assertThereIsNoException()
+                .and()
+                .assertQueueHasNotMessages();
     }
 }

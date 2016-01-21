@@ -1,6 +1,6 @@
 package com.example;
 
-class DefaultQueueServiceFactory implements QueueServiceFactory {
+public class DefaultQueueServiceFactory implements QueueServiceFactory {
 
     public static final String FLAVOR_LOCAL = "local";
     public static final String FLAVOR_INTEGRATION = "integration";

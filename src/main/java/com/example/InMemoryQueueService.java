@@ -171,7 +171,6 @@ public class InMemoryQueueService implements QueueService, Closeable {
             final ConcurrentLinkedQueue<DefaultMessage> queueWithPolled) {
 
         while (!Thread.currentThread().isInterrupted()) {
-            logger.w("receiptHandle = " + receiptHandle);
 
             DefaultMessage msg = queueWithPolled
                     .stream()
@@ -181,7 +180,6 @@ public class InMemoryQueueService implements QueueService, Closeable {
 
             // message was delete
             if (msg != null) {
-                logger.w("let's wait and check again");
                 // let's wait and check again
                 try {
                     Thread.sleep(DEFAULT_RETRY_TIMEOUT_IN_MILLS);

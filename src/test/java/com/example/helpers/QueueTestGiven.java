@@ -1,5 +1,8 @@
-package com.example;
+package com.example.helpers;
 
+import com.example.DefaultQueueServiceFactory;
+import com.example.QueueService;
+import com.example.QueueServiceFactory;
 import org.junit.Assert;
 
 public final class QueueTestGiven {

@@ -1,31 +1,34 @@
-package com.example;
+package com.example.helpers;
+
+import com.example.Message;
+import com.example.QueueService;
 
 import java.util.List;
 
 public class QueueTestWhenResult {
 
-    private final List<Message> pulledMessages;
+    private final List<Message> deletedMessages;
     private final List<String> pushedMessages;
     private final Exception resultedException;
     private final QueueService queueService;
     private final String queueName;
 
     public QueueTestWhenResult(
-            List<Message> pulledMessages,
+            List<Message> deletedMessages,
             List<String> pushedMessages,
             Exception resultedException,
             QueueService queueService,
             String queueName) {
 
-        this.pulledMessages = pulledMessages;
+        this.deletedMessages = deletedMessages;
         this.pushedMessages = pushedMessages;
         this.resultedException = resultedException;
         this.queueService = queueService;
         this.queueName = queueName;
     }
 
-    public List<Message> getPulledMessages() {
-        return pulledMessages;
+    public List<Message> getDeletedMessages() {
+        return deletedMessages;
     }
 
     public Exception getResultedException() {

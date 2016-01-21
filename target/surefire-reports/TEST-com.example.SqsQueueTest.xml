@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="6" failures="0" name="com.example.InMemoryQueueTest" time="3.296" errors="0" skipped="0">
+<testsuite tests="6" failures="0" name="com.example.SqsQueueTest" time="27.691" errors="0" skipped="0">
   <properties>
     <property name="idea.version" value="14.1.5"/>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
@@ -65,10 +65,10 @@
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="sun.cpu.isalist" value=""/>
   </properties>
-  <testcase classname="com.example.InMemoryQueueTest" name="pushHappyPathBasicTest" time="0.087"/>
-  <testcase classname="com.example.InMemoryQueueTest" name="pushHappyPath3In2OutTest" time="0.006"/>
-  <testcase classname="com.example.InMemoryQueueTest" name="pushHappyPath2In2OutTest" time="0.007"/>
-  <testcase classname="com.example.InMemoryQueueTest" name="notDeletedMessagePutBackSuccessfully" time="3.006"/>
-  <testcase classname="com.example.InMemoryQueueTest" name="multiplyProducersInDifferentThreadsHappyPath" time="0.087"/>
-  <testcase classname="com.example.InMemoryQueueTest" name="multipleConsumersInDifferThreadHappyPath" time="0.055"/>
+  <testcase classname="com.example.SqsQueueTest" name="multipleConsumersInDifferThreadHappyPath" time="0.044"/>
+  <testcase classname="com.example.SqsQueueTest" name="pushHappyPathBasicSqsTest" time="2.125"/>
+  <testcase classname="com.example.SqsQueueTest" name="pushHappyPath3In2OutSqsTest" time="1.716"/>
+  <testcase classname="com.example.SqsQueueTest" name="pushHappyPath2In2OutSqsTest" time="1.509"/>
+  <testcase classname="com.example.SqsQueueTest" name="notDeletedMessagePutBackSuccessfullySqsTest" time="3.879"/>
+  <testcase classname="com.example.SqsQueueTest" name="multiplyProducersInDifferentThreadsHappyPathSqsTest" time="18.418"/>
 </testsuite>

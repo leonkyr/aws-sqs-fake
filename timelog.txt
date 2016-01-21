@@ -2,3 +2,4 @@
 20.01 - 2h -> Finished InMemory+Tests
 20.01 - .5h -> refactored InMemoryQueue
 20.01 - .5h -> started AWS queue service and made 5 tests for InMem to pass
+21.01 - 1h -> made SQS queue Service working and passing the tests

@@ -1,5 +1,7 @@
-package com.example;
+package com.example.helpers;
 
+import com.example.Message;
+import com.example.QueueService;
 import org.junit.Assert;
 
 import java.util.List;
@@ -14,8 +16,8 @@ public final class QueueTestThen {
         this.whenResult = whenResult;
     }
 
-    private List<Message> getPulledMessages() {
-        return whenResult.getPulledMessages();
+    private List<Message> getDeletedMessages() {
+        return whenResult.getDeletedMessages();
     }
 
     private List<String> getPushedMessages() {
@@ -30,14 +32,16 @@ public final class QueueTestThen {
         return whenResult.getQueueService();
     }
 
-    public QueueTestThen assertSavedMessage(String message) {
+    public QueueTestThen assertSavedAndDeletedMessage(String message) {
 
-        if (getPulledMessages().size() == 0) {
-            fail("There are no message pulled");
+        System.out.println("TEST ASSERT -> message = [" + message + "]");
+
+        if (getDeletedMessages().size() == 0) {
+            fail("There are no deleted messages");
         }
 
         Assert.assertSame("The message count is not the same.", 1,
-                (int) getPulledMessages()
+                (int) getDeletedMessages()
                         .stream()
                         .filter(msg -> msg.getBody().equals(message))
                         .count());
@@ -56,16 +60,17 @@ public final class QueueTestThen {
             Assert.assertNull(message);
         } catch (Exception e) {
             fail(e.getMessage());
+            e.printStackTrace();
         }
 
         return this;
     }
 
     public QueueTestThen assertThereIsNoException() {
-        if (whenResult.getResultedException() != null) {
-            whenResult.getResultedException().printStackTrace();
+        if (getResultedException() != null) {
+            getResultedException().printStackTrace();
         }
-        Assert.assertNull(whenResult.getResultedException());
+        Assert.assertNull(getResultedException());
 
         return this;
     }
