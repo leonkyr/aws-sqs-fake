@@ -3,3 +3,4 @@
 20.01 - .5h -> refactored InMemoryQueue
 20.01 - .5h -> started AWS queue service and made 5 tests for InMem to pass
 21.01 - 1h -> made SQS queue Service working and passing the tests
+21.01 - .75h -> added test for multi-consumer to InMem and SQS, investigated why SQS cannot be 100% FIFO that caused a test to fail occ.

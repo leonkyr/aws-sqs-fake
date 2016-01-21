@@ -41,10 +41,7 @@ public class InMemoryQueueService implements QueueService, Closeable {
     public void push(String queueName, String messageBody)
             throws InterruptedException, IOException {
 
-        logger.w("push -> queueName = [" + queueName + "], messageBoy = [" + messageBody + "]");
-        // message has the following struct
-        // ATTEMPT_TO_DEQUEUE : VISIBLE_FROM_IN_MILLISECONDS : MESSAGE
-
+        logger.w("INMEM push -> queueName = [" + queueName + "], messageBoy = [" + messageBody + "]");
 
         final DefaultMessage internalMessage =
                 DefaultMessage.create(
@@ -74,7 +71,7 @@ public class InMemoryQueueService implements QueueService, Closeable {
             throws InterruptedException, IOException {
         // we don't care that a consumer make consume multiple message at the same time
 
-        logger.w("pull -> queueName = [" + queueName + "]");
+        logger.w("INMEM pull -> queueName = [" + queueName + "]");
 
         final ConcurrentLinkedQueue<DefaultMessage> queue =
                 getQueueByName(queueName);
@@ -89,7 +86,6 @@ public class InMemoryQueueService implements QueueService, Closeable {
                 getQueuesWithPolledMessagesByName(queueName);
 
         final DefaultMessage internalMessage = queue.poll();
-        logger.w("internalMessage = " + internalMessage);
 
         final long timeout = setVisibilityTimeoutToMessage(visibilityTimeout, internalMessage);
         final String receiptHandle = setReceiptHandleForMessage(internalMessage);
@@ -107,7 +103,7 @@ public class InMemoryQueueService implements QueueService, Closeable {
 
     @Override
     public void delete(String queueName, String receiptHandle) {
-        logger.w("delete -> queueName = [" + queueName + "], receiptHandle = [" + receiptHandle + "]");
+        logger.w("INMEM delete -> queueName = [" + queueName + "], receiptHandle = [" + receiptHandle + "]");
 
         final ConcurrentLinkedQueue<DefaultMessage> queueWithPolled =
                 getQueuesWithPolledMessagesByName(queueName);

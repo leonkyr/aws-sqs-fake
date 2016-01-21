@@ -57,10 +57,10 @@ public final class QueueTestThen {
 
         try {
             final Message message = getQueueService().pull(whenResult.getQueueName());
-            Assert.assertNull(message);
+            Assert.assertNull("The message with body ["+(message != null ? message.getBody() : "<NULL>")+"] was returned", message);
         } catch (Exception e) {
-            fail(e.getMessage());
             e.printStackTrace();
+            fail(e.getMessage());
         }
 
         return this;

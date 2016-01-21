@@ -12,6 +12,7 @@ import static org.junit.Assert.fail;
 
 public final class QueueTestWhen {
     private static final long DEFAULT_PUSH_TIMEOUT_IN_MILLS = 1000;
+    private static final long DEFAULT_PULL_TIMEOUT_IN_MILLS = 5 * 1000;
     private final QueueService queueService;
     private final String queueName;
     private Exception resultedException = null;
@@ -182,7 +183,7 @@ public final class QueueTestWhen {
         executorService.shutdown();
         try {
             final boolean done = executorService.awaitTermination(DEFAULT_PUSH_TIMEOUT_IN_MILLS, TimeUnit.MILLISECONDS);
-            System.out.println("Finished pushing messages: " + done);
+            System.out.println("Finished pushing messages. DONE?" + done);
         } catch (InterruptedException e) {
             resultedException = e;
         }
@@ -224,8 +225,8 @@ public final class QueueTestWhen {
 
         executorService.shutdown();
         try {
-            final boolean done = executorService.awaitTermination(DEFAULT_PUSH_TIMEOUT_IN_MILLS, TimeUnit.MILLISECONDS);
-            System.out.println("Finished pushing messages: " + done);
+            final boolean done = executorService.awaitTermination(DEFAULT_PULL_TIMEOUT_IN_MILLS, TimeUnit.MILLISECONDS);
+            System.out.println("Finished pulling messages. DONE?" + done);
         } catch (InterruptedException e) {
             resultedException = e;
         }
