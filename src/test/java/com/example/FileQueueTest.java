@@ -33,13 +33,13 @@ public class FileQueueTest {
     }
 
     @Test
-    public void multiplyProducersInDifferentThreadsHappyPathSqsTest() {
+    public void multipleProducersInDifferentThreadsHappyPathSqsTest() {
 
         tester.multipleProducersInDifferentThreadsHappyPathSqsTest(FLAVOR);
     }
 
     @Test
-    public void multipleConsumersInDifferentThreadHappyPath() {
+    public void multipleConsumersInDifferentThreadsHappyPath() {
 
         tester.multipleConsumersInDifferentThreadsHappyPath(FLAVOR);
     }

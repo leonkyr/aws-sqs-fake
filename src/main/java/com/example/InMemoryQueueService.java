@@ -23,6 +23,7 @@ public class InMemoryQueueService implements QueueService, Closeable {
 
     // constructor for DI Container (f.e. Spring)
     public InMemoryQueueService(HashCalculator hashCalculator, Logger logger) {
+
         this.hashCalculator = hashCalculator;
         this.logger = logger;
 

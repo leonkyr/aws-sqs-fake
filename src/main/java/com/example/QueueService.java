@@ -33,7 +33,8 @@ public interface QueueService {
     Message pull(String queueName)
             throws InterruptedException, IOException;
 
-    void delete(String queueName, String receiptHandle);
+    void delete(String queueName, String receiptHandle)
+            throws InterruptedException, IOException;
 
     default long calculateVisibility(Integer visibilityTimeoutInSeconds) {
         return visibilityTimeoutInSeconds * 1000;

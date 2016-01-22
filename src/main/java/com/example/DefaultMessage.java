@@ -39,6 +39,10 @@ public class DefaultMessage implements Message {
         return MD5OfBody;
     }
 
+    public long getVisibilityTimeout() {
+        return visibilityTimeout;
+    }
+
     public void setReceiptHandle() {
         this.receiptHandle = generateReceiptHandle();
     }
