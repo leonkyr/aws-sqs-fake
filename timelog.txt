@@ -6,4 +6,7 @@
 21.01 - .75h -> added test for multi-consumer to InMem and SQS, investigated why SQS cannot be 100% FIFO that caused a test to fail occ.
 22.01 - 1h -> implemented all tests and methods for FileQueueService, but need to debug more and handle visibilityTimeout
 23.01 - 1.5h -> finished FileQueueService and ALL tests pass. Will refactor a bit make it better understandable..
-31.01 - .25h -> small refactorings + comments. Need to investigate how to make more robust test of SQS considering weak FIFO guaranties
+23.01 - .25h -> small refactorings + comments. Need to investigate how to make more robust test of SQS considering weak FIFO guaranties
+23.01 - .2h -> spent time thinking how to make FIFO delivery and re-read README where it stays it is not required (+AWS), prepared package
+
+Total: ~9h

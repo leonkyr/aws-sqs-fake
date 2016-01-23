@@ -1,3 +1,18 @@
+Hello Canva Team!
+
+My name is Leo and you can find my time log in the file timelog.txt (I spent around 9h in total).
+In this solution I've implemented 18 integration tests and all Queue Services.
+One test fails occasionally (pushHappyPath3In2OutSqsTest) and the explanation you can read inside.
+I believe I can make test more robust, but I will need even more time.
+
+I would be super happy to discuss my fast solution with somebody!
+
+Thank you for considering me.
+
+Regards,
+Leo
+
+=============== ORIGINAL =================
 Message Queues
 --------------
 Your task is to design and implement a message queue.

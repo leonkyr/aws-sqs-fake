@@ -41,10 +41,6 @@ public class QueueServiceTester {
 
     public void pushHappyPath3In2OutTest(String flavor) {
 
-        ///
-        /// TODO: occasionally fails due to not guarantied FIFO property (SQS case)
-        ///
-
         QueueTestGiven given = new QueueTestGiven();
 
         String message1 = messageGenerator.generate();

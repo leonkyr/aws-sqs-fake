@@ -32,9 +32,9 @@ public final class QueueTestThen {
         return whenResult.getQueueService();
     }
 
-    public QueueTestThen assertSavedAndDeletedMessage(String message) {
+    public QueueTestThen assertSavedAndDeletedMessage(String messageBody) {
 
-        System.out.println("TEST ASSERT -> message = [" + message + "]");
+        System.out.println("TEST ASSERT -> message = [" + messageBody + "]");
 
         if (getDeletedMessages().size() == 0) {
             fail("There are no deleted messages");
@@ -43,7 +43,7 @@ public final class QueueTestThen {
         Assert.assertSame("The message count is not the same.", 1,
                 (int) getDeletedMessages()
                         .stream()
-                        .filter(msg -> msg.getBody().equals(message))
+                        .filter(msg -> msg.getBody().equals(messageBody))
                         .count());
 
         return this;

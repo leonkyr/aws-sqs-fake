@@ -27,6 +27,9 @@ public class Record {
     }
 
     public static String create(DefaultMessage message) {
+        if (message == null)
+            return "";
+
         return create(
                 message.getRequeueCount(),
                 message.getReceiptHandle(),
