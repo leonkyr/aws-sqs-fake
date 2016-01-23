@@ -12,24 +12,34 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
     private static final boolean IS_NOT_TEMP_FILE = false;
     private static final boolean IS_TEMP_FILE = true;
     private static final long DEFAULT_RETRY_TIMEOUT_IN_MILLS = 1000;
+    private static final String DATA_DIRECTORY = "sqs";
 
     private final Logger logger;
     private final HashCalculator hashCalculator;
-    private final String DATA_DIRECTORY = "sqs";
-
     private final ExecutorService executorService;
 
     public FileQueueService() {
-        this(new MD5HashCalculator(), new SimpleConsoleLogger());
+        this(new MD5HashCalculator(), Executors.newSingleThreadExecutor(), new SimpleConsoleLogger());
     }
 
     // for DI
-    public FileQueueService(HashCalculator hashCalculator, Logger logger) {
+    public FileQueueService(
+            HashCalculator hashCalculator,
+            ExecutorService executorService,
+            Logger logger) {
+        if (hashCalculator == null) {
+            throw new IllegalArgumentException("hashCalculator cannot be null.");
+        }
+        if (executorService == null) {
+            throw new IllegalArgumentException("executorService cannot be null.");
+        }
+        if (logger == null) {
+            throw new IllegalArgumentException("logger cannot be null.");
+        }
 
         this.hashCalculator = hashCalculator;
         this.logger = logger;
-
-        this.executorService = Executors.newSingleThreadExecutor();
+        this.executorService = executorService;
     }
 
     public HashCalculator getHashCalculator() {
@@ -45,20 +55,18 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
         final String hash = getHashCalculator().calculate(messageBody);
 
         lock(lock);
-        logger.w("Before PUSH");
-        printFileContent(messagesFile);
         try (PrintWriter pw = new PrintWriter(new FileWriter(messagesFile, true))) {  // append
+
             pw.println(Record.create(
                     ZERO_REQUEUE_COUNT,
                     NOT_SET_RECEIPT_HANDLE,
                     messageBody,
                     hash,
                     DEFAULT_VISIBILITY_TIMEOUT_IN_SECONDS));
+
         } finally {
             unlock(lock);
         }
-        logger.w("AFTER PUSH");
-        printFileContent(messagesFile);
     }
 
     @Override
@@ -70,49 +78,29 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
         File lock = getLockFile(queueName);
 
         lock(lock);
-        logger.w("Before PULL");
-        printFileContent(messagesFile);
         DefaultMessage internalMessage,
                 resultMessage = null;
-        try
-        {
-            try (BufferedReader reader = new BufferedReader(new FileReader(messagesFile));
-                 PrintWriter writer = new PrintWriter(new FileWriter(messagesTemporaryFile, true))) {  // append
 
-                for(String line; (line = reader.readLine()) != null;) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(messagesFile));
+             PrintWriter writer = new PrintWriter(new FileWriter(messagesTemporaryFile, true))) {  // append
 
-                    internalMessage = Record.parse(line);
-                    // we don't have messages in the file anymore
-                    if (internalMessage == null)
-                        return resultMessage;
+            for(String line; (line = reader.readLine()) != null;) {
 
-                    // we cannot pull message with receiptHandle
-                    if (resultMessage == null &&
-                            internalMessage.getReceiptHandle().equals("")) {
-                        final long timeout = setVisibilityTimeoutToMessage(visibilityTimeout, internalMessage);
-                        final String receiptHandle = setReceiptHandleForMessage(internalMessage);
+                internalMessage = Record.parse(line);
+                // we don't have messages in the file anymore
+                if (internalMessage == null)
+                    return resultMessage;
 
-                        String updatedRecord = Record.create(internalMessage);
-                        writer.println(updatedRecord);
-                        resultMessage = internalMessage;
+                // we cannot pull message with receiptHandle
+                if (resultMessage == null &&
+                        internalMessage.getReceiptHandle().equals("")) {
 
-                        Future<?> task = executorService.submit(() -> {
-                            try {
-                                verifyVisibilityTimeoutOnDelete(receiptHandle, queueName);
-                            } catch (InterruptedException e) {
-                                // we will handle later properly
-                                e.printStackTrace();
-                            }
-                        });
-
-
-
-                        waitTillTaskExecutedAsync(queueName, internalMessage, timeout, task);
-                    }
-                    else {
-                        // let's write file to the end
-                        writer.println(line);
-                    }
+                    resultMessage =
+                            getMessageFromQueueAndScheduleVisibilityCheck(queueName, visibilityTimeout, internalMessage, writer);
+                }
+                else {
+                    // let's write file to the end
+                    writer.println(line);
                 }
             }
         }
@@ -121,9 +109,6 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
             logger.w("Renamed Successfully? " + renameResult);
             unlock(lock);
         }
-
-        logger.w("AFTER PULL");
-        printFileContent(messagesFile);
 
         return resultMessage;
     }
@@ -143,30 +128,23 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
         File lock = getLockFile(queueName);
 
         lock(lock);
-        logger.w("Before DELETE");
-        printFileContent(messagesFile);
-        try
-        {
-            try (BufferedReader reader = new BufferedReader(new FileReader(messagesFile));
-                 PrintWriter writer = new PrintWriter(new FileWriter(messagesTemporaryFile, true))) {  // append
+        try (BufferedReader reader = new BufferedReader(new FileReader(messagesFile));
+             PrintWriter writer = new PrintWriter(new FileWriter(messagesTemporaryFile, true))) {  // append
 
-                boolean deleted = false;
-                for (String line; (line = reader.readLine()) != null;) {
-                    if (!deleted) {
-                        Message internalMessage = Record.parse(line);
+            boolean deleted = false;
+            for (String line; (line = reader.readLine()) != null;) {
+                if (!deleted) {
+                    Message internalMessage = Record.parse(line);
 
-                        logger.w(internalMessage);
-
-                        if (internalMessage != null &&
-                                internalMessage.getReceiptHandle().equals(receiptHandle)) {
-                            logger.w("DELETED ---_> " + line);
-                            deleted = true;
-                            continue;
-                        }
+                    if (internalMessage != null &&
+                            internalMessage.getReceiptHandle().equals(receiptHandle)) {
+                        logger.w("DELETED ----> " + line);
+                        deleted = true;
+                        continue;
                     }
-
-                    writer.println(line);
                 }
+
+                writer.println(line);
             }
         }
         finally {
@@ -174,9 +152,35 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
             logger.w("Renamed Successfully? " + renameResult);
             unlock(lock);
         }
+    }
 
-        logger.w("After DELETE");
-        printFileContent(messagesFile);
+    private DefaultMessage getMessageFromQueueAndScheduleVisibilityCheck(
+            String queueName,
+            Integer visibilityTimeout,
+            DefaultMessage internalMessage,
+            PrintWriter writer) {
+
+        DefaultMessage resultMessage;
+
+        final long timeout = setVisibilityTimeoutToMessage(visibilityTimeout, internalMessage);
+        final String receiptHandle = setReceiptHandleForMessage(internalMessage);
+
+        resultMessage = internalMessage;
+
+        String updatedRecord = Record.create(internalMessage);
+        writer.println(updatedRecord);
+
+        Future<?> task = executorService.submit(() -> {
+            try {
+                verifyVisibilityTimeoutOnDelete(receiptHandle, queueName);
+            } catch (InterruptedException e) {
+                // we will handle later properly
+                e.printStackTrace();
+            }
+        });
+
+        waitTillTaskExecutedAsync(queueName, internalMessage, timeout, task);
+        return resultMessage;
     }
 
     private void printFileContent(File file) {
@@ -238,6 +242,7 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
             Future<?> task) {
 
         // simple way to do async wait..
+        // TODO: Refactor bad error handling
         new Thread(() -> {
             try {
                 task.get(timeout, TimeUnit.MILLISECONDS);
@@ -282,19 +287,10 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
                 message.setReceiptHandle("");
 
                 String updatedRecord = Record.create(message);
+                // let's write not deleted message first - aka FIFO
                 writer.println(updatedRecord);
 
-                for (String line; (line = reader.readLine()) != null;) {
-                    DefaultMessage internalMessage = Record.parse(line);
-
-                    if (internalMessage != null &&
-                            internalMessage.getReceiptHandle().equals(handleToDelete)) {
-                        // we wrote the message before reading the file
-                        continue;
-                    }
-
-                    writer.println(line);
-                }
+                writeFileToEndExceptReceiptHandle(reader, writer, handleToDelete);
             }
         }
         finally {
@@ -307,6 +303,20 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
         printFileContent(messagesFile);
     }
 
+    private void writeFileToEndExceptReceiptHandle(BufferedReader reader, PrintWriter writer, String handleToDelete) throws IOException {
+        for (String line; (line = reader.readLine()) != null;) {
+            Message msg = Record.parse(line);
+
+            if (msg != null &&
+                    msg.getReceiptHandle().equals(handleToDelete)) {
+                // we wrote the message before reading the file
+                continue;
+            }
+
+            writer.println(line);
+        }
+    }
+
     private void verifyVisibilityTimeoutOnDelete(
             final String receiptHandle,
             final String queueName) throws InterruptedException {
@@ -317,8 +327,6 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
             File lock = getLockFile(queueName);
 
             lock(lock);
-            logger.w("Before DELETE");
-            printFileContent(messagesFile);
 
             Message messageToDelete = null;
             try (BufferedReader reader = new BufferedReader(new FileReader(messagesFile))) {  // append

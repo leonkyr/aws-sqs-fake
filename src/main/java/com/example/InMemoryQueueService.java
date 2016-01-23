@@ -2,6 +2,8 @@ package com.example;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -22,16 +24,27 @@ public class InMemoryQueueService extends BaseLocalQueueService implements Close
     private final ExecutorService executorService;
 
     // constructor for DI Container (f.e. Spring)
-    public InMemoryQueueService(HashCalculator hashCalculator, Logger logger) {
+    public InMemoryQueueService(
+            HashCalculator hashCalculator,
+            ExecutorService executorService,
+            Logger logger) {
+        if (hashCalculator == null) {
+            throw new IllegalArgumentException("hashCalculator cannot be null.");
+        }
+        if (executorService == null) {
+            throw new IllegalArgumentException("executorService cannot be null.");
+        }
+        if (logger == null) {
+            throw new IllegalArgumentException("logger cannot be null.");
+        }
 
         this.hashCalculator = hashCalculator;
         this.logger = logger;
-
-        this.executorService = Executors.newSingleThreadExecutor();
+        this.executorService = executorService;
     }
 
     public InMemoryQueueService(){
-        this(new MD5HashCalculator(), new SimpleConsoleLogger());
+        this(new MD5HashCalculator(), Executors.newSingleThreadExecutor(), new SimpleConsoleLogger());
     }
 
     public HashCalculator getHashCalculator() {
@@ -79,12 +92,11 @@ public class InMemoryQueueService extends BaseLocalQueueService implements Close
 
         if (queue.isEmpty()) {
             logger.w("There are not messages in the queue. leaving");
-            // I could use NullMessage class also..
+            // I could use NullMessage class also
             return null;
         }
 
-        final ConcurrentLinkedQueue<DefaultMessage> queueWithPolled =
-                getQueuesWithPolledMessagesByName(queueName);
+        final ConcurrentLinkedQueue<DefaultMessage> queueWithPolled = getQueuesWithPolledMessagesByName(queueName);
 
         final DefaultMessage internalMessage = queue.poll();
 
@@ -106,8 +118,7 @@ public class InMemoryQueueService extends BaseLocalQueueService implements Close
     public void delete(String queueName, String receiptHandle) {
         logger.w("INMEM delete -> queueName = [" + queueName + "], receiptHandle = [" + receiptHandle + "]");
 
-        final ConcurrentLinkedQueue<DefaultMessage> queueWithPolled =
-                getQueuesWithPolledMessagesByName(queueName);
+        final ConcurrentLinkedQueue<DefaultMessage> queueWithPolled = getQueuesWithPolledMessagesByName(queueName);
 
         logger.w("Polled queue size BEFORE delete is " + queueWithPolled.size());
         queueWithPolled.removeIf(msg -> msg.getReceiptHandle().equals(receiptHandle));
@@ -164,7 +175,7 @@ public class InMemoryQueueService extends BaseLocalQueueService implements Close
                     .findFirst()
                     .orElseGet(() -> null);
 
-            // message was delete
+            // message was delete. Excellent!
             if (msg != null) {
                 // let's wait and check again
                 try {
@@ -183,5 +194,11 @@ public class InMemoryQueueService extends BaseLocalQueueService implements Close
     @Override
     public void close() throws IOException {
         executorService.shutdown();
+    }
+
+    private String generateMessageId() {
+        SecureRandom random = new SecureRandom();
+
+        return new BigInteger(130, random).toString(32);
     }
 }

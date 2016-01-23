@@ -12,15 +12,23 @@ public class SqsQueueService implements QueueService {
     private final AmazonSQSClient sqsClient;
     private final Logger logger;
 
+    public SqsQueueService(){
+        this(AmazonSqsClientFactory.create(), new SimpleConsoleLogger());
+    }
+
     // for DI
     public SqsQueueService(AmazonSQSClient sqsClient, Logger logger) {
+        if (sqsClient == null) {
+            throw new IllegalArgumentException("sqsClient cannot be null.");
+        }
+        if (logger == null) {
+            throw new IllegalArgumentException("logger cannot be null.");
+        }
+
         this.sqsClient = sqsClient;
         this.logger = logger;
     }
 
-    public SqsQueueService(){
-        this(AmazonSqsClientFactory.create(), new SimpleConsoleLogger());
-    }
 
     public AmazonSQSClient getSqsClient() {
         return sqsClient;

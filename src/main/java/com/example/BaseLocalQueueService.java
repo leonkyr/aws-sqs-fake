@@ -11,4 +11,8 @@ public abstract class BaseLocalQueueService implements QueueService {
         internalMessage.setVisibilityTimeout(timeout);
         return timeout;
     }
+
+    private  long calculateVisibility(Integer visibilityTimeoutInSeconds) {
+        return visibilityTimeoutInSeconds * 1000;
+    }
 }
