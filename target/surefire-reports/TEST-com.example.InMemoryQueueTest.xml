@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="6" failures="0" name="com.example.InMemoryQueueTest" time="3.296" errors="0" skipped="0">
+<testsuite tests="6" failures="0" name="com.example.InMemoryQueueTest" time="7.081" errors="0" skipped="0">
   <properties>
     <property name="idea.version" value="14.1.5"/>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
@@ -13,7 +13,7 @@
     <property name="guice.disable.misplaced.annotation.check" value="true"/>
     <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
     <property name="file.encoding.pkg" value="sun.io"/>
-    <property name="idea.launcher.port" value="7559"/>
+    <property name="idea.launcher.port" value="7549"/>
     <property name="user.country" value="US"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="sun.os.patch.level" value="unknown"/>
@@ -65,10 +65,10 @@
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="sun.cpu.isalist" value=""/>
   </properties>
-  <testcase classname="com.example.InMemoryQueueTest" name="pushHappyPathBasicTest" time="0.087"/>
-  <testcase classname="com.example.InMemoryQueueTest" name="pushHappyPath3In2OutTest" time="0.006"/>
-  <testcase classname="com.example.InMemoryQueueTest" name="pushHappyPath2In2OutTest" time="0.007"/>
-  <testcase classname="com.example.InMemoryQueueTest" name="notDeletedMessagePutBackSuccessfully" time="3.006"/>
-  <testcase classname="com.example.InMemoryQueueTest" name="multiplyProducersInDifferentThreadsHappyPath" time="0.087"/>
-  <testcase classname="com.example.InMemoryQueueTest" name="multipleConsumersInDifferThreadHappyPath" time="0.055"/>
+  <testcase classname="com.example.InMemoryQueueTest" name="pushHappyPathBasicInMemTest" time="0.002"/>
+  <testcase classname="com.example.InMemoryQueueTest" name="pushHappyPath3In2OutInMemTest" time="0.002"/>
+  <testcase classname="com.example.InMemoryQueueTest" name="pushHappyPath2In2OutInMemTest" time="0.001"/>
+  <testcase classname="com.example.InMemoryQueueTest" name="notDeletedMessagePutBackSuccessfullyInMemTest" time="7.004"/>
+  <testcase classname="com.example.InMemoryQueueTest" name="multipleProducersInDifferentThreadsHappyPathInMemTest" time="0.026"/>
+  <testcase classname="com.example.InMemoryQueueTest" name="multipleConsumersInDifferentThreadsHappyPathInMemTest" time="0.046"/>
 </testsuite>

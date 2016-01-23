@@ -8,7 +8,7 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
 
     private static final int ZERO_REQUEUE_COUNT = 0;
     private static final String NOT_SET_RECEIPT_HANDLE = "";
-    private static final int DEFAULT_VISIBILITY_TIMEOUT_IN_SECONDS = 5;
+    private static final int DEFAULT_VISIBILITY_TIMEOUT_IN_SECONDS = 30;
     private static final boolean IS_NOT_TEMP_FILE = false;
     private static final boolean IS_TEMP_FILE = true;
     private static final long DEFAULT_RETRY_TIMEOUT_IN_MILLS = 1000;
@@ -38,14 +38,14 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
 
     @Override
     public void push(String queueName, String messageBody) throws InterruptedException, IOException {
-        logger.w("queueName = [" + queueName + "], messageBody = [" + messageBody + "]");
+        logger.w("FILE push -> queueName = [" + queueName + "], messageBody = [" + messageBody + "]");
 
         File messagesFile = getMessageFile(queueName, IS_NOT_TEMP_FILE);
         File lock = getLockFile(queueName);
         final String hash = getHashCalculator().calculate(messageBody);
 
         lock(lock);
-        logger.w("Before PUT");
+        logger.w("Before PUSH");
         printFileContent(messagesFile);
         try (PrintWriter pw = new PrintWriter(new FileWriter(messagesFile, true))) {  // append
             pw.println(Record.create(
@@ -57,13 +57,13 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
         } finally {
             unlock(lock);
         }
-        logger.w("AFTER PUT");
+        logger.w("AFTER PUSH");
         printFileContent(messagesFile);
     }
 
     @Override
     public Message pull(String queueName, Integer visibilityTimeout) throws InterruptedException, IOException {
-        logger.w("queueName = [" + queueName + "], visibilityTimeout = [" + visibilityTimeout + "]");
+        logger.w("FILE pull -> queueName = [" + queueName + "], visibilityTimeout = [" + visibilityTimeout + "]");
 
         File messagesFile = getMessageFile(queueName, IS_NOT_TEMP_FILE);
         File messagesTemporaryFile = getMessageFile(queueName, IS_TEMP_FILE);
@@ -105,6 +105,8 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
                             }
                         });
 
+
+
                         waitTillTaskExecutedAsync(queueName, internalMessage, timeout, task);
                     }
                     else {
@@ -128,13 +130,13 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
 
     @Override
     public Message pull(String queueName) throws InterruptedException, IOException {
-        return pull(queueName, 0);
+        return pull(queueName, DEFAULT_VISIBILITY_TIMEOUT_IN_SECONDS);
     }
 
     @Override
     public void delete(String queueName, String receiptHandle)
             throws InterruptedException, IOException{
-        logger.w("queueName = [" + queueName + "], receiptHandle = [" + receiptHandle + "]");
+        logger.w("FILE delete -> queueName = [" + queueName + "], receiptHandle = [" + receiptHandle + "]");
 
         File messagesFile = getMessageFile(queueName, IS_NOT_TEMP_FILE);
         File messagesTemporaryFile = getMessageFile(queueName, IS_TEMP_FILE);
@@ -276,6 +278,7 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
                  PrintWriter writer = new PrintWriter(new FileWriter(messagesTemporaryFile, true))) {  // append
 
                 message.incrementRequeueCount();
+                String handleToDelete = message.getReceiptHandle();
                 message.setReceiptHandle("");
 
                 String updatedRecord = Record.create(message);
@@ -285,7 +288,7 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
                     DefaultMessage internalMessage = Record.parse(line);
 
                     if (internalMessage != null &&
-                            internalMessage.getReceiptHandle().equals(message.getReceiptHandle())) {
+                            internalMessage.getReceiptHandle().equals(handleToDelete)) {
                         // we wrote the message before reading the file
                         continue;
                     }

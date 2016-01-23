@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="6" failures="0" name="com.example.SqsQueueTest" time="27.691" errors="0" skipped="0">
+<testsuite tests="6" failures="1" name="com.example.SqsQueueTest" time="41.617" errors="0" skipped="0">
   <properties>
     <property name="idea.version" value="14.1.5"/>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
@@ -13,7 +13,7 @@
     <property name="guice.disable.misplaced.annotation.check" value="true"/>
     <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
     <property name="file.encoding.pkg" value="sun.io"/>
-    <property name="idea.launcher.port" value="7559"/>
+    <property name="idea.launcher.port" value="7549"/>
     <property name="user.country" value="US"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="sun.os.patch.level" value="unknown"/>
@@ -65,10 +65,182 @@
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="sun.cpu.isalist" value=""/>
   </properties>
-  <testcase classname="com.example.SqsQueueTest" name="multipleConsumersInDifferThreadHappyPath" time="0.044"/>
-  <testcase classname="com.example.SqsQueueTest" name="pushHappyPathBasicSqsTest" time="2.125"/>
-  <testcase classname="com.example.SqsQueueTest" name="pushHappyPath3In2OutSqsTest" time="1.716"/>
-  <testcase classname="com.example.SqsQueueTest" name="pushHappyPath2In2OutSqsTest" time="1.509"/>
-  <testcase classname="com.example.SqsQueueTest" name="notDeletedMessagePutBackSuccessfullySqsTest" time="3.879"/>
-  <testcase classname="com.example.SqsQueueTest" name="multiplyProducersInDifferentThreadsHappyPathSqsTest" time="18.418"/>
+  <testcase classname="com.example.SqsQueueTest" name="pushHappyPathBasicSqsTest" time="2.238"/>
+  <testcase classname="com.example.SqsQueueTest" name="pushHappyPath3In2OutSqsTest" time="1.052">
+    <failure message="The message count is not the same. expected same:&lt;1&gt; was not:&lt;0&gt;" type="java.lang.AssertionError">java.lang.AssertionError: The message count is not the same. expected same:&lt;1&gt; was not:&lt;0&gt;
+	at org.junit.Assert.fail(Assert.java:69)
+	at org.junit.Assert.failNotSame(Assert.java:310)
+	at org.junit.Assert.assertSame(Assert.java:263)
+	at com.example.helpers.QueueTestThen.assertSavedAndDeletedMessage(QueueTestThen.java:43)
+	at com.example.helpers.QueueServiceTester.pushHappyPath3In2OutTest(QueueServiceTester.java:81)
+	at com.example.SqsQueueTest.pushHappyPath3In2OutSqsTest(SqsQueueTest.java:24)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.junit.internal.runners.TestMethodRunner.executeMethodBody(TestMethodRunner.java:99)
+	at org.junit.internal.runners.TestMethodRunner.runUnprotected(TestMethodRunner.java:81)
+	at org.junit.internal.runners.BeforeAndAfterRunner.runProtected(BeforeAndAfterRunner.java:34)
+	at org.junit.internal.runners.TestMethodRunner.runMethod(TestMethodRunner.java:75)
+	at org.junit.internal.runners.TestMethodRunner.run(TestMethodRunner.java:45)
+	at org.junit.internal.runners.TestClassMethodsRunner.invokeTestMethod(TestClassMethodsRunner.java:71)
+	at org.junit.internal.runners.TestClassMethodsRunner.run(TestClassMethodsRunner.java:35)
+	at org.junit.internal.runners.TestClassRunner$1.runUnprotected(TestClassRunner.java:42)
+	at org.junit.internal.runners.BeforeAndAfterRunner.runProtected(BeforeAndAfterRunner.java:34)
+	at org.junit.internal.runners.TestClassRunner.run(TestClassRunner.java:52)
+	at org.apache.maven.surefire.junit4.JUnit4TestSet.execute(JUnit4TestSet.java:53)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:123)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:104)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:164)
+	at org.apache.maven.surefire.booter.ProviderFactory$ProviderProxy.invoke(ProviderFactory.java:110)
+	at org.apache.maven.surefire.booter.SurefireStarter.invokeProvider(SurefireStarter.java:175)
+	at org.apache.maven.surefire.booter.SurefireStarter.runSuitesInProcessWhenForked(SurefireStarter.java:107)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:68)
+</failure>
+    <system-out>SQS push -&gt; queueName = [253b188c-1641-47f9-9675-c4109016bc6c], messageBody = [{ id : &quot;2rf46u2r6bqig8016eqddhv8s5&quot;}]
+messagesFilePath = sqs/7ec9c934-7833-487b-995d-9395ca526f48/messages
+lockFilePath = sqs/7ec9c934-7833-487b-995d-9395ca526f48/.lock
+Before DELETE
+-----/Users/leo/dev/_java/canva-queue-challenge/sqs/7ec9c934-7833-487b-995d-9395ca526f48/messages------
+0:30:84dk7scfib26hmt4r2oqk7truk:c93ebf1617d1f7efbd8633a40a27ec65:{ id : &quot;hf8m2fddh6rbolg7q8qcvhvrlb&quot;}
+-----------
+messageBody = { id : &quot;hf8m2fddh6rbolg7q8qcvhvrlb&quot;}
+messagesFilePath = sqs/de780b92-49ba-4e34-92af-82846c1a3fc1/messages
+lockFilePath = sqs/de780b92-49ba-4e34-92af-82846c1a3fc1/.lock
+Before DELETE
+-----/Users/leo/dev/_java/canva-queue-challenge/sqs/de780b92-49ba-4e34-92af-82846c1a3fc1/messages------
+0:30:u7i40dc7kqtn8a3vbhtpsb31n:88056807df29a144b37379629190ad76:{ id : &quot;qfff5ea49kv4mlvvocvikr8u5o&quot;}
+-----------
+messageBody = { id : &quot;qfff5ea49kv4mlvvocvikr8u5o&quot;}
+{MD5OfMessageBody: 449ed6f4997f70b64545669330bb0666,MessageId: e5eb006d-6264-44ad-a8d4-ce03ea674349}
+SQS push -&gt; queueName = [253b188c-1641-47f9-9675-c4109016bc6c], messageBody = [{ id : &quot;n8gpru5l0drhki68en0febqkfh&quot;}]
+{MD5OfMessageBody: 02a179cc05bd41494b5a1ba80acba842,MessageId: 9de36445-b5cf-459f-a8fb-d88b8a2c5b1d}
+SQS push -&gt; queueName = [253b188c-1641-47f9-9675-c4109016bc6c], messageBody = [{ id : &quot;qn3knq4ibumklu20ka4impv182&quot;}]
+{MD5OfMessageBody: 9555c84c72c16da3225ac09c2d628de5,MessageId: 3552f806-e293-4e48-bd20-c745109e7fd6}
+SQS pull -&gt; queueName = [253b188c-1641-47f9-9675-c4109016bc6c], visibilityTimeout = [30]
+&gt;&gt;&gt; Stored PULLED message = DefaultMessage{messageId=&apos;e5eb006d-6264-44ad-a8d4-ce03ea674349&apos;, receiptHandle=&apos;AQEBqaO31nQQkZ/SAlzlDB9KF9HyVQ5fUk8bTodHfpw8TEYzP41TaI3AEM9t1f3xxNBd05Sb2EgeQ5RHYU00ftX6QErOa2h+B8cQ6HSmH/fX7u+GJGUcP7D1Wq+ZCdHvVBUrmVmdtvspDcupUuMeYPD/0RNiBvUgm5t7FVDgE40KZL5hTMNURovKe4cux09/vGbK9Vjy+NwvHe7aT6NP8JZR3YA+/3Rrei0ahPDwpUQwqqtiSvIvP59T+q40sV3RQJVm18izo/kyt4pfgB1nHMa6Bvsc50cOWuzVg8kGFSYipYnKqoEA8n1LW7+UqBbt2YCEPuE1WW4iqKNGv3yHuEHfq7E9kZWreSMSU+pfi+i+Kck=&apos;, body=&apos;{ id : &quot;2rf46u2r6bqig8016eqddhv8s5&quot;}&apos;, MD5OfBody=&apos;449ed6f4997f70b64545669330bb0666&apos;, visibilityTimeout=30000}
+SQS pull -&gt; queueName = [253b188c-1641-47f9-9675-c4109016bc6c], visibilityTimeout = [30]
+&gt;&gt;&gt; Stored PULLED message = DefaultMessage{messageId=&apos;3552f806-e293-4e48-bd20-c745109e7fd6&apos;, receiptHandle=&apos;AQEBuLdlTPmrn3+133xTr+5c87rN90L22q4fZPCYpUjVZV9wOgXVSdN/ORFtxu5SxMB8uHg3xTY8l7RcZyUsy+yuu5+4wlEvaBdTZ97ZJghLYU9xRBDFEa9dW2fZ5Gp81oiV3bjRhzSN8tvcZmbmDDOTjQ+JVZhpAdrRUmBVS/G2b3pNPteyL4idhfsBxqXcEGOUyOXmGF3ErByMWcKcILqSUVgkGEKcNXh/y89JaYV2yxl8w1+d2wfnmQTHjimsb23mXg0/cIeq2lnWfe6L2ND5PkuU0rOmwVfiCdN22rNXs4++DDMTPxJq1kCLhxWKU26oOgOT0AXtyremtHJ+AsQ4DUpZxQXZD+3XdCGxcTo00n8=&apos;, body=&apos;{ id : &quot;qn3knq4ibumklu20ka4impv182&quot;}&apos;, MD5OfBody=&apos;9555c84c72c16da3225ac09c2d628de5&apos;, visibilityTimeout=30000}
+TEST DELETE -&gt; messageToDelete = [DefaultMessage{messageId=&apos;e5eb006d-6264-44ad-a8d4-ce03ea674349&apos;, receiptHandle=&apos;AQEBqaO31nQQkZ/SAlzlDB9KF9HyVQ5fUk8bTodHfpw8TEYzP41TaI3AEM9t1f3xxNBd05Sb2EgeQ5RHYU00ftX6QErOa2h+B8cQ6HSmH/fX7u+GJGUcP7D1Wq+ZCdHvVBUrmVmdtvspDcupUuMeYPD/0RNiBvUgm5t7FVDgE40KZL5hTMNURovKe4cux09/vGbK9Vjy+NwvHe7aT6NP8JZR3YA+/3Rrei0ahPDwpUQwqqtiSvIvP59T+q40sV3RQJVm18izo/kyt4pfgB1nHMa6Bvsc50cOWuzVg8kGFSYipYnKqoEA8n1LW7+UqBbt2YCEPuE1WW4iqKNGv3yHuEHfq7E9kZWreSMSU+pfi+i+Kck=&apos;, body=&apos;{ id : &quot;2rf46u2r6bqig8016eqddhv8s5&quot;}&apos;, MD5OfBody=&apos;449ed6f4997f70b64545669330bb0666&apos;, visibilityTimeout=30000}]
+SQS delete -&gt; queueName = [253b188c-1641-47f9-9675-c4109016bc6c], receiptHandle = [AQEBqaO31nQQkZ/SAlzlDB9KF9HyVQ5fUk8bTodHfpw8TEYzP41TaI3AEM9t1f3xxNBd05Sb2EgeQ5RHYU00ftX6QErOa2h+B8cQ6HSmH/fX7u+GJGUcP7D1Wq+ZCdHvVBUrmVmdtvspDcupUuMeYPD/0RNiBvUgm5t7FVDgE40KZL5hTMNURovKe4cux09/vGbK9Vjy+NwvHe7aT6NP8JZR3YA+/3Rrei0ahPDwpUQwqqtiSvIvP59T+q40sV3RQJVm18izo/kyt4pfgB1nHMa6Bvsc50cOWuzVg8kGFSYipYnKqoEA8n1LW7+UqBbt2YCEPuE1WW4iqKNGv3yHuEHfq7E9kZWreSMSU+pfi+i+Kck=]
+TEST DELETE -&gt; messageToDelete = [DefaultMessage{messageId=&apos;3552f806-e293-4e48-bd20-c745109e7fd6&apos;, receiptHandle=&apos;AQEBuLdlTPmrn3+133xTr+5c87rN90L22q4fZPCYpUjVZV9wOgXVSdN/ORFtxu5SxMB8uHg3xTY8l7RcZyUsy+yuu5+4wlEvaBdTZ97ZJghLYU9xRBDFEa9dW2fZ5Gp81oiV3bjRhzSN8tvcZmbmDDOTjQ+JVZhpAdrRUmBVS/G2b3pNPteyL4idhfsBxqXcEGOUyOXmGF3ErByMWcKcILqSUVgkGEKcNXh/y89JaYV2yxl8w1+d2wfnmQTHjimsb23mXg0/cIeq2lnWfe6L2ND5PkuU0rOmwVfiCdN22rNXs4++DDMTPxJq1kCLhxWKU26oOgOT0AXtyremtHJ+AsQ4DUpZxQXZD+3XdCGxcTo00n8=&apos;, body=&apos;{ id : &quot;qn3knq4ibumklu20ka4impv182&quot;}&apos;, MD5OfBody=&apos;9555c84c72c16da3225ac09c2d628de5&apos;, visibilityTimeout=30000}]
+SQS delete -&gt; queueName = [253b188c-1641-47f9-9675-c4109016bc6c], receiptHandle = [AQEBuLdlTPmrn3+133xTr+5c87rN90L22q4fZPCYpUjVZV9wOgXVSdN/ORFtxu5SxMB8uHg3xTY8l7RcZyUsy+yuu5+4wlEvaBdTZ97ZJghLYU9xRBDFEa9dW2fZ5Gp81oiV3bjRhzSN8tvcZmbmDDOTjQ+JVZhpAdrRUmBVS/G2b3pNPteyL4idhfsBxqXcEGOUyOXmGF3ErByMWcKcILqSUVgkGEKcNXh/y89JaYV2yxl8w1+d2wfnmQTHjimsb23mXg0/cIeq2lnWfe6L2ND5PkuU0rOmwVfiCdN22rNXs4++DDMTPxJq1kCLhxWKU26oOgOT0AXtyremtHJ+AsQ4DUpZxQXZD+3XdCGxcTo00n8=]
+messagesFilePath = sqs/db200438-592d-485a-8687-8e964ab3b907/messages
+lockFilePath = sqs/db200438-592d-485a-8687-8e964ab3b907/.lock
+Before DELETE
+-----/Users/leo/dev/_java/canva-queue-challenge/sqs/db200438-592d-485a-8687-8e964ab3b907/messages------
+0:30:hprnfoqbec99krvj090svouino:c9c2d3c4939f1b831e720a70bff8a887:{ id : &quot;hvsk0j5t7eppq5dada0kpvpgei&quot;}
+0:30:gqkk54ll95pvq9tott2v6qndv2:12969db5a63e9f2abc81eb7cfcb91e4c:{ id : &quot;fb77rufspjovlgpaouo88nva5r&quot;}
+0:30:utgqlbupc8qfjr1pjcok39vvn2:e873857d62cd8a0aae1ae9f27a283e55:{ id : &quot;11vrvuojmf3qe6cvhjkq90dcem&quot;}
+0:30:4f668km61mbaf1qbfbohdpjubg:97c6305158221c6b10565c72b3519450:{ id : &quot;i8clc1mudehjqgonoqf3cn4fup&quot;}
+0:30:8qvnmbi1dm42ijvnt6lr41dp15:6213dba835bef68276336f08668e18dd:{ id : &quot;vek4475c054pejjuhvqh85i7i1&quot;}
+0:30:innd6herlto3o2cbps17idocb5:12c9d6fc6036c2a7a5b3a124fe860992:{ id : &quot;jc7605r927ptfqd2610kpp008q&quot;}
+0:30:mlsij7asre2mc9scl9ipsqa81i:49da8d20f1528f67057cceea650c5009:{ id : &quot;3ccg6jbviijudbhg9nb794uds9&quot;}
+0:30:iobvgbofa17b5or9ipjiqu03c0:31a43163ce51c8d3df66ee9d18c98684:{ id : &quot;qfls3lnlfouskkg6ruv8ocm1nl&quot;}
+0:30:mkcrv0r89sc4l57nnljuhr6ond:100308e0210a0a90b9256b926b7d2109:{ id : &quot;8sd35lp21r5e5ao4gccvlvedlp&quot;}
+0:30:csrfujg8n8b02rotufle4epblj:d868d9b076a17ba5abe3845dc8066c3b:{ id : &quot;ipge169lq4fa7j5l08n9bfn8t4&quot;}
+0:30:9gt7agg69s2f5682s0nkokf2u2:0c0d9c1b074c2c53e7fda45d65d42dde:{ id : &quot;d6u1jij0gin4nvo4o8aqsg941q&quot;}
+0:30:hpncouujljb5taehna6k221r8h:10a5e35e352e36dffdf559d3b10a913f:{ id : &quot;6q8id72dm127udmf5ms6gu62rt&quot;}
+0:30:2osnvqfi4spmcrpoa8n0cdhuci:ae82aab501316f479bfd2a0ce55010fd:{ id : &quot;47rviibucv4a5eo8pdjchqnc78&quot;}
+0:30:hil8e1l7upp11526n4brv0f765:e150748fd05e2363a92d0f9aecf378e0:{ id : &quot;nhnv4t8cnmdsg6nr9c964hqoko&quot;}
+0:30:di5aneus7rljam1t2pikvlrge9:672697f181db527ee2ff7dfab3e40754:{ id : &quot;e2uu68qe6g0hunljue3ao1ppka&quot;}
+0:30:qb3vl4q1c2jml49ki1ejt3k2uf:d70c73ae6edbb9939edefae4b091a440:{ id : &quot;qujtfg25bc5o9ctun8k51m8gg5&quot;}
+0:30:k7uovhj5equtgaheufatp9mng1:4ca28a69f002d057330ef8ee00270d2a:{ id : &quot;lec35vtpf0k0f727d0b4mj6p1d&quot;}
+0:30:asrsn1ljl0bt61tt6ljnlrn5dk:278dda4f5699b7fd65369266eefebf57:{ id : &quot;hs9415s8r21r730n7ti9t0h04m&quot;}
+0:30:v4ehed8johu6abukg0s9sfghle:13ec72dec396e5c357582930648b95f3:{ id : &quot;m6lqe0hat9fdkuvdn08369lnm5&quot;}
+0:30:mc9t8jf3c2m0dhg760b5ichcrh:f3257d7dfa20ee908d16653cf7f394bd:{ id : &quot;6v2mn2fcr518n8g0hkci15eeaq&quot;}
+0:30:530aa238i3dooqfm1j59ru1k0l:323c00837ca6b0319943dfa4dc251e54:{ id : &quot;dugh7vhfvm2ehcj7d0cjk0jptm&quot;}
+0:30:gomdmo8vj3o98o7dk845t5cct3:bd258065fc7623a3ad5a29fba599b036:{ id : &quot;d6tsta509l6g9qhi7l8m0ho16h&quot;}
+0:30:s4t0htbatm5j2ljjqamog3pbui:4685f6c137e0025fab6238611b90056f:{ id : &quot;54phc0eic54i733rkb23tm7e1o&quot;}
+0:30:epigktfvbcnfdbe07qqpg8i2a2:382d7bb3e9a31d8ebb64b7f49d6401ce:{ id : &quot;5uo4r0g9rul2l0bash1ahvmfq3&quot;}
+0:30:kf63qq078r7ho129kds4eagf4q:36eb5f21d7fcb5246a389b7c18623880:{ id : &quot;8ave3e75jnvu5oadrn67tbulk7&quot;}
+0:30:dipf41o84dl9j1agdgagp6kqu8:bbf496fa61fc4c86fd185e4b01e40ed0:{ id : &quot;gt5od4jf6pbgvupqj26dom91du&quot;}
+0:30:psp10lto73ktvhkt1990otvkhb:62d4ac544de7523962f8b663f32b94bd:{ id : &quot;dhnsp3m0j2452lkfr8rfrefec&quot;}
+0:30:ts3bjjefrehjl3tqucie4o0did:86a466daf77bf5b2bd4b8e24acdff4f1:{ id : &quot;3c59hqhi57b7uvl3ivjrej167p&quot;}
+0:30:mcoj313qfd5t5sk5jhb10jtucs:1b2f6a11f36bb8b66ad45904a215d84b:{ id : &quot;rpobcco1rqgmsu432v4gorhe57&quot;}
+0:30:v0qc5rpc2oj62ccvcj9gim48s0:33dcad6698c6f16d1b87aa9e12c04842:{ id : &quot;li4e6jkiq72fal9eivn0ekpfn&quot;}
+0:30:m4kkm1mo47fjhoj905qvqpmvo6:f1d2c7943e8a13abfb03253b23bbb69a:{ id : &quot;dti3kh8i1q881t70pgo147t5hj&quot;}
+0:30:nmu2kroskdd9q5mm1rreqo1ha4:5ad99a176a17ee4b9fee68d347a3af56:{ id : &quot;ajo5v7ollohehcfua9uol9onrh&quot;}
+0:30:njbtfbcvv30abqkci3u9kt2h56:7f14cc2a8e4fa48631d3a8ee01b40296:{ id : &quot;s7mkhb91uvm4mjag2669k8iugp&quot;}
+0:30:jf1l6b15bgd6o9670ag9ui20pf:4180947d59547b4576a8a94b8308cd78:{ id : &quot;34g3ltq091o6di3m8eapegjt70&quot;}
+0:30:4a93mhonoa5d4jk217ea59huh7:08cbf8085e54750027be61266d899657:{ id : &quot;lq8pv7ou8r8kcjkh0ch2u1jkvp&quot;}
+0:30:jlalr4q81u6faivq2v65tdu7ml:5ca33de009f3e1788f5df7e1a3c0af8f:{ id : &quot;akk55u0kb2gf57lo68hm4trh0f&quot;}
+0:30:nnkm009rlu5osrf01k31ol55kd:981e7fc547d74c2b42f8b23ccac16b5f:{ id : &quot;c235jc9l30qmou5nm6meredjh8&quot;}
+0:30:rccmg3npa9h88kv33095p5qsv3:751deb1827ae78ce7e002cf45371ddb1:{ id : &quot;q083ulcc8dvco35qv47pigo8q&quot;}
+0:30:7j8f8ni82gd939tan8uj0e29qi:c15186aa37923353e942fd2ba039b009:{ id : &quot;tife6ft0ai2227ch759vmcrg2m&quot;}
+0:30:mh2o02cqc2hd0l0uq4lo3jdfe:9b4b8513106f3855da833e38252badcf:{ id : &quot;imn9q8i36gv701cbbadelpk5fj&quot;}
+0:30:nj9blo8qhhvdhibl0bbs9rk8en:04244479cc975c21ef50e327cdbee720:{ id : &quot;5logl7oli8tso2k0iikhviv6ut&quot;}
+0:30:1jgba443lj4mb4cadk32ie7vc4:b86887da59dafda817aa1009748e0d08:{ id : &quot;6tu28pfrnopblhshv86n8am39p&quot;}
+0:30:40vtlh884cl1k8ognca9slq3cd:b842161a194faf1591f226d045ee033f:{ id : &quot;3pnb5b23hmi8s449h2eq7tmr20&quot;}
+0:30:i7go4r3kdb7tsrpcorfedkub1q:6be1be9c2356c4ac0cb23d79004865a3:{ id : &quot;h2vs5b73uvqblbq3019esgdkof&quot;}
+0:30:vsug70m5sg4008dc1h7vi4i5sk:d5add9bc602d19aef64e57bf2a257c34:{ id : &quot;qq7g8mrkvchh188ps66vscfmgf&quot;}
+0:30:g1tundo3v96351mmf2nqdemp79:5c0dc41ae6b6d0d71e9e99c166ba0f60:{ id : &quot;2p22oaclgte24dputagkin4ghg&quot;}
+0:30:tdvpqb4511e7vnbq353bh2hvaa:b2ee373426e83f9c8a92da0bf5d360aa:{ id : &quot;q85kksgd5r24cc03g9u3mvgi6n&quot;}
+0:30:6ndlt171v5fie7p0p5477lre28:78cb06aadd2913bf9d909f0fd4a88697:{ id : &quot;kevipeur9pf5drcbd5cdn9qnjg&quot;}
+0:30:aj7970hcne3qp7bu3rj3qfqhul:9e424abb718e9ec548b987ba7b3fa153:{ id : &quot;et2ji5k6c6881gnpih0poin4q&quot;}
+0:30:t6f4jakfh8i1mnf4dfo6dol9is:d9c29662d65d0a6ac5a8d9dcd155bf6e:{ id : &quot;uahhjuhpa38url3e7ddsvsj38r&quot;}
+0:30:vnebo024jj7d7es19a2rf3njdb:3a3630b58df4c2d527fdee1433e4c548:{ id : &quot;pa9e3dhsvv0s09alg5crv5tj0g&quot;}
+0:30:445u676okkad269hu4oms7giv4:acc8e4ef05f25aa3bc6ef9fa09767d21:{ id : &quot;cqjja7v64e9jbvt1jddnqa4c28&quot;}
+0:30:2bhdjhi5f5hluvp92uatmubddd:d41d43a039e20098cbb7489427368001:{ id : &quot;l3imdfoes2guvecop3ti960jgo&quot;}
+0:30:q3m2b9vhkkasma2oiqt6m34o2q:ab3144f429044570d44d1e31fc3568d9:{ id : &quot;h5h56fujem8hur13u8v0qqt5ph&quot;}
+0:30:er0ce9jrb7tiq1cc6ht78j0h71:d65013703ad30a08512325a24c63a73e:{ id : &quot;ehiq9btk9fnsfsg92jtrc5a3o8&quot;}
+0:30:oi32f0f5dt2b457sm1m241gb3p:923544a20ef3e869ba66462a3b217f20:{ id : &quot;oa4slhbbho8jra9gt1nssncmjl&quot;}
+0:30:ku787b9kofldceaejjrhtopl05:e39ba9068aa176c14c9964c2b42ae1cf:{ id : &quot;3if2f009bpkeej1be6uv7otepd&quot;}
+0:30:hqdr8gn9i6tcc7s2b6r73f7qpd:8859829b9977b4385b5de37b1327656a:{ id : &quot;l6jjtiec2r237hs7e7kcpu3b0s&quot;}
+0:30:rm25gts60j43th69f4tq6hvgea:ef8b0a457775070eb636ed67b18a1586:{ id : &quot;5upuk8bo0v98urro784ekoaq9k&quot;}
+0:30:g7e3bn448o8drnmh7ecu9rk4vp:e52fc1ad531dd67af6793689a42ab8bc:{ id : &quot;okcvjd9i4osb3lgn3pa9vuclkj&quot;}
+0:30:dlqomrvaohst509112afcveghn:1f77a5af151d5e2a7bc0b38b2b75376b:{ id : &quot;obmg85sefnhtvl5hlhc85toba&quot;}
+0:30:9sckiuvgoigc4tc1448lepgoue:21a80150b36e8ef0747f7ecc6a344456:{ id : &quot;s5gauuv2d69hcidu6d5pi90k7c&quot;}
+0:30:72ni9an44cp7bfi15h0n7pc0k0:a9d067407e27e18be54456cdc094a1a1:{ id : &quot;g3gv6gmq8lgs00rq0e8cd5pu20&quot;}
+0:30:63i67bt09efocjaijht9eegef9:4cc134316627f2d8fa59b15b11631380:{ id : &quot;eum0d31sjt3cj53r8tb71v4j6l&quot;}
+0:30:k4l64qmtf0njv2g0v31cqouge7:c440d268cc089de767df4792d0f1f1c6:{ id : &quot;t25mjr22anntdba8t1ic7ai2s1&quot;}
+0:30:312v2vptqh2ajcrqi3g39b2tar:39c25477676652e08626b0a457aa06c9:{ id : &quot;63k1u2o6btibsq2l9qjlfufebb&quot;}
+0:30:5001pof00dji1dmgj6hmm6h3jk:496c1d35ba7cb64c1fb100f8e27d24e6:{ id : &quot;l2vrc1oli7ftqlubt5iuijl4ej&quot;}
+0:30:3vc6kio4covo85ju5n3t25r336:7d2d9938b34d2269ec91f3081b908335:{ id : &quot;f94vhqf5im6493906vhq2b1829&quot;}
+0:30:4aa6ruvc2jtsgqa38c9nc4nar1:797309de941c0ad183ae16e8bc5cc796:{ id : &quot;es65q7shv6bo14ldrpnciasa2n&quot;}
+0:30:o9gs8phpg8s4qbdmkaps3idh00:ca3ac232adbbe632e3284568a4a7b80a:{ id : &quot;bvvj60bu3u8bd88ifl0mklk64u&quot;}
+0:30:gamlq3m299qv4a5501cruevvne:35f3ab626896a7054db2210bc42f69c9:{ id : &quot;rlt2enj830omrehf301npv19fm&quot;}
+0:30:p5ijrrd96ldhc70bmikun83elp:691e4f95522ed98aeff2a7a0576589ef:{ id : &quot;e2ui9s87fu7ou5qh1hk6mpf9vl&quot;}
+0:30:uec6f4952l8e0313cubh8cmt6o:15830ae9bcd7fc3e900d36984e51e507:{ id : &quot;c40718dvihtmk1p9gct9rjm9s1&quot;}
+0:30:h7742qcenb9heisd4fd3v3jlrc:fc8576f16bee72fdac3c1873ac5cd342:{ id : &quot;3tfov0o6knq49e8paf7p0nn16o&quot;}
+0:30:bqm88ecat2k57hvpi2a5kcsdub:bbaf7ba9b6a41bd8325a10fee9d424a1:{ id : &quot;dmeaeegsudcj61ntiet64bbhmm&quot;}
+0:30:en6on4ru950hjemmi761hfo9ke:51fc3b21dc8fd769ddfd83100e0a2f76:{ id : &quot;8g4q3pcvf8n7fn886kbb3nuoab&quot;}
+0:30:a68mvilb3b5vucchkrdpsh12tb:4c355f6c2dcddfcaef545d5c6da4dc9a:{ id : &quot;c7pt7tgpl90o0dfq8aov467gqr&quot;}
+0:30:got7js4fe86o348kopsc9ba8d1:14d35a8affa1172ffb54b29b657fb46a:{ id : &quot;7hlpqp87qfbumhpgk745b0v8pi&quot;}
+0:30:46j81agtf231t57d6uqtmh7a1r:f49a8228bf82750f6d3580587cf62d18:{ id : &quot;i54lmfto5pqsa84fihuhbb46rn&quot;}
+0:30:130d5lnjck9o0e3q13enf70kt:b9fd5e900cae9dd9192edd3090462295:{ id : &quot;mfbc5csp749ls5m0ksvjvme22c&quot;}
+0:30:ikmdriqk1t8a5h564rpvqhbpca:71cf21c78cc146915cad0dae328bc563:{ id : &quot;20d1f4ah50433abb58i9oi22ad&quot;}
+0:30:2bvf66q4q8i5caet9ksc56fi3v:8c4500836b0bb937bbb43f5b33a665c6:{ id : &quot;72eibcgqc1o0c28t5s6it6ccdj&quot;}
+0:30:9d8v8h8o0o8g7jaja6i2ij5e7j:c70391601e46d37ba6cff8800c4e7914:{ id : &quot;e7u1u7q4g4cn9630ukb8f836bm&quot;}
+0:30:uv9f6nqqaccnmqo8ocolpmont:c089a79f5cf6d05b5b7d039bfaf21c34:{ id : &quot;d6a2pb9vbgeokcogff2trqjcug&quot;}
+0:30:tq10c13ogb8d5s6c26av4qmret:281ea6dd67f363ae881d0452848cde84:{ id : &quot;sgq3ihjc899b4csss48pte5bpc&quot;}
+0:30:honstd1a7rnb2fqnhlas2g2364:1452d99074389fde636a3e8168e80037:{ id : &quot;dukcl0hj60lq8qiourgct4vk6i&quot;}
+0:30:9ov7f1l2ogptklmngulah6e94u:6bff186f49c8c4aacd3856e41cdeb099:{ id : &quot;an5c2iai62pq0n6liktv0437pi&quot;}
+0:30:bpl19hbgvgqfdj75a87caroec7:54c05b080e7f38fb5551ebedeadc3d04:{ id : &quot;hjlpthb2tben7p01e0b1uk9pri&quot;}
+0:30:qqf5nfj0huk32l2s1tgv6lhabs:8ced1651aa7daa6c942674ab7667d18f:{ id : &quot;e05qioq3gga1hvdt6pvejb1stl&quot;}
+0:30:p1l8l1n0n6t6lntsjiubm0h22g:e83c1024126779b3c4426bdb8bb57a39:{ id : &quot;hdjvv57bs4r8f438h9m7l4af3t&quot;}
+0:30:rr60i3uorr5bu4vqsf2dn1p98f:3de232b8c630d2bdbff2f7b72ecc63a8:{ id : &quot;cv50usm5ltr7gp799n24bqqgql&quot;}
+0:30:phapocqe0slnqf927bjdfo96a3:275dd3b2fe4093e47cc3d26d9918ef23:{ id : &quot;ipau0aavitv61mhkbkh4eoqirr&quot;}
+0:30:i43s8bve55f7b7i3dkckotdru5:693a8641c2eb45315488482e8d89ca17:{ id : &quot;1kgfrg3qr9irq7snvnnfgatvai&quot;}
+0:30:ghqbboun2kjtq8d69fjaatguhj:647945487f3dc79753e2b9e1539fc71d:{ id : &quot;8bumn8jiikgl5g69eaoksq5k8e&quot;}
+0:30:jbp8em93nmcvo4e2o6g97qd86b:968132ba1ccad7f90af5bfdb7e2c0d0d:{ id : &quot;g7q4gd09gq246dmdq1gb05h19n&quot;}
+0:30:uarfcv95qkns891dhgg4vchpt8:e83320a6a4781ccd9c1ad3dc61738119:{ id : &quot;7gvgig6svf06c0lm2o3atv747q&quot;}
+0:30:fn4d22vp8bium15upgus78bvv1:5f0f04077090ff4bd7d62d90058aea17:{ id : &quot;dlf0eu59ok5rnaibnpg73toobt&quot;}
+0:30:4jevhseknkf5fn6glh43n78tg9:64f249a03c9a79176ef4866ca24d2a82:{ id : &quot;3bm90isipcvvlkl5rve6elmf3k&quot;}
+0:30:e6u2oagb8bpr0rld07jomicdd3:7a65e26c4722cdfe8703e916f1df3070:{ id : &quot;htnbk4t8qfd1ef6kihcvee7ih&quot;}
+0:30:kioghkari89feqtb033bjd33tn:a8a632893a7ad06fafdf1d2c1812f807:{ id : &quot;75ijr7l6hikrq6otv76gh5kaps&quot;}
+-----------
+messageBody = { id : &quot;hvsk0j5t7eppq5dada0kpvpgei&quot;}
+TEST ASSERT -&gt; message = [{ id : &quot;2rf46u2r6bqig8016eqddhv8s5&quot;}]
+TEST ASSERT -&gt; message = [{ id : &quot;n8gpru5l0drhki68en0febqkfh&quot;}]
+</system-out>
+  </testcase>
+  <testcase classname="com.example.SqsQueueTest" name="pushHappyPath2In2OutSqsTest" time="1.077"/>
+  <testcase classname="com.example.SqsQueueTest" name="notDeletedMessagePutBackSuccessfullySqsTest" time="8.176"/>
+  <testcase classname="com.example.SqsQueueTest" name="multipleProducersInDifferentThreadsHappyPathSqsTest" time="13.778"/>
+  <testcase classname="com.example.SqsQueueTest" name="multipleConsumersInDifferentThreadsHappyPath" time="15.295"/>
 </testsuite>
