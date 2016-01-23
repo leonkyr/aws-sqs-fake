@@ -3,7 +3,7 @@ package com.example.helpers;
 public class QueueServiceTester {
 
     private static final int MESSAGE_VISIBILITY_TIMEOUT_IN_SECONDS = 1;
-    private static final int DEFAULT_WAIT_TIME_IN_MILLS = 3*1000;
+    private static final int DEFAULT_WAIT_TIME_IN_MILLS = 7*1000;
     private static final int PRODUCERS_COUNT = 10;
     private static final int MESSAGE_COUNT_FOR_A_PRODUCER = 10;
     private static final int CONSUMERS_COUNT = 10;
@@ -11,7 +11,7 @@ public class QueueServiceTester {
     private final MessageGenerator messageGenerator = new MessageGenerator();
     private final QueueNameGenerator queueNameGenerator = new QueueNameGenerator();
 
-    public void pushHappyPathBasicSqsTest(String flavor) {
+    public void pushHappyPathBasicTest(String flavor) {
 
         QueueTestGiven given = new QueueTestGiven();
 
@@ -39,7 +39,7 @@ public class QueueServiceTester {
                 .assertQueueHasNotMessages();
     }
 
-    public void pushHappyPath3In2OutSqsTest(String flavor) {
+    public void pushHappyPath3In2OutTest(String flavor) {
 
         ///
         /// TODO: occasionally fails due to not guarantied FIFO property (SQS case)
@@ -83,7 +83,7 @@ public class QueueServiceTester {
                 .assertQueueHasMessages();
     }
 
-    public void pushHappyPath2In2OutSqsTest(String flavor) {
+    public void pushHappyPath2In2OutTest(String flavor) {
 
         QueueTestGiven given = new QueueTestGiven();
 
@@ -120,7 +120,7 @@ public class QueueServiceTester {
                 .assertQueueHasNotMessages();
     }
 
-    public void notDeletedMessagePutBackSuccessfullySqsTest(String flavor) throws InterruptedException {
+    public void notDeletedMessagePutBackSuccessfullyTest(String flavor) throws InterruptedException {
 
         QueueTestGiven given = new QueueTestGiven();
 
@@ -137,15 +137,19 @@ public class QueueServiceTester {
                 .and()
                 .pullAndSave(MESSAGE_VISIBILITY_TIMEOUT_IN_SECONDS)
                 .and()
-                .waitToPassDelay(DEFAULT_WAIT_TIME_IN_MILLS).
+                .waitToPassDelay(DEFAULT_WAIT_TIME_IN_MILLS)
+                .and()
+                .pullAndSave()
+                .and()
+                .delete(message).
 
         then()
                 .assertThereIsNoException()
                 .and()
-                .assertQueueHasMessages();
+                .assertQueueHasNotMessages();
     }
 
-    public void multipleProducersInDifferentThreadsHappyPathSqsTest(String flavor) {
+    public void multipleProducersInDifferentThreadsHappyPathTest(String flavor) {
 
         QueueTestGiven given = new QueueTestGiven();
 
@@ -168,7 +172,7 @@ public class QueueServiceTester {
                 .assertQueueHasMessageSize(PRODUCERS_COUNT*MESSAGE_COUNT_FOR_A_PRODUCER);
     }
 
-    public void multipleConsumersInDifferentThreadsHappyPath(String flavor) {
+    public void multipleConsumersInDifferentThreadsHappyPathTest(String flavor) {
         QueueTestGiven given = new QueueTestGiven();
 
         final int messageCount = PRODUCERS_COUNT*MESSAGE_COUNT_FOR_A_PRODUCER;

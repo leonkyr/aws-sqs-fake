@@ -79,7 +79,7 @@ public final class QueueTestWhen {
         try {
             Message message = getQueueService().pull(getQueueName());
 
-            System.out.println(">>> Stored PULLED message = " + message.getBody());
+            System.out.println(">>> Stored PULLED message = " + message);
             getPulledMessages().add(message);
         } catch (Exception e) {
             resultedException = e;
@@ -113,7 +113,7 @@ public final class QueueTestWhen {
     }
 
     private QueueTestWhen delete(Message messageToDelete) {
-        System.out.println("TEST DELETE -> messageToDelete.getBody() = [" + messageToDelete.getBody() + "]");
+        System.out.println("TEST DELETE -> messageToDelete = [" + messageToDelete + "]");
 
         try {
             if (messageToDelete != null) {

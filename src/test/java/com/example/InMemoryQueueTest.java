@@ -10,38 +10,38 @@ public class InMemoryQueueTest {
 
 
     @Test
-    public void pushHappyPathBasicSqsTest() {
+    public void pushHappyPathBasicInMemTest() {
 
-        tester.pushHappyPathBasicSqsTest(FLAVOR);
+        tester.pushHappyPathBasicTest(FLAVOR);
     }
 
     @Test
-    public void pushHappyPath3In2OutSqsTest() {
+    public void pushHappyPath3In2OutInMemTest() {
 
-        tester.pushHappyPath3In2OutSqsTest(FLAVOR);
+        tester.pushHappyPath3In2OutTest(FLAVOR);
     }
 
     @Test
-    public void pushHappyPath2In2OutSqsTest() {
+    public void pushHappyPath2In2OutInMemTest() {
 
-        tester.pushHappyPath2In2OutSqsTest(FLAVOR);
+        tester.pushHappyPath2In2OutTest(FLAVOR);
     }
 
     @Test
-    public void notDeletedMessagePutBackSuccessfullySqsTest() throws InterruptedException {
+    public void notDeletedMessagePutBackSuccessfullyInMemTest() throws InterruptedException {
 
-        tester.notDeletedMessagePutBackSuccessfullySqsTest(FLAVOR);
+        tester.notDeletedMessagePutBackSuccessfullyTest(FLAVOR);
     }
 
     @Test
-    public void multipleProducersInDifferentThreadsHappyPathSqsTest() {
+    public void multipleProducersInDifferentThreadsHappyPathInMemTest() {
 
-        tester.multipleProducersInDifferentThreadsHappyPathSqsTest(FLAVOR);
+        tester.multipleProducersInDifferentThreadsHappyPathTest(FLAVOR);
     }
 
     @Test
-    public void multipleConsumersInDifferentThreadsHappyPath() {
+    public void multipleConsumersInDifferentThreadsHappyPathInMemTest() {
 
-        tester.multipleConsumersInDifferentThreadsHappyPath(FLAVOR);
+        tester.multipleConsumersInDifferentThreadsHappyPathTest(FLAVOR);
     }
 }

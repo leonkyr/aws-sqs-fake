@@ -9,39 +9,39 @@ public class FileQueueTest {
     private final String FLAVOR = DefaultQueueServiceFactory.FLAVOR_INTEGRATION;
 
     @Test
-    public void pushHappyPathBasicSqsTest() {
+    public void pushHappyPathBasicFileTest() {
 
-        tester.pushHappyPathBasicSqsTest(FLAVOR);
+        tester.pushHappyPathBasicTest(FLAVOR);
     }
 
     @Test
-    public void pushHappyPath3In2OutSqsTest() {
+    public void pushHappyPath3In2OutFileTest() {
 
-        tester.pushHappyPath3In2OutSqsTest(FLAVOR);
+        tester.pushHappyPath3In2OutTest(FLAVOR);
     }
 
     @Test
-    public void pushHappyPath2In2OutSqsTest() {
+    public void pushHappyPath2In2OutFileTest() {
 
-        tester.pushHappyPath2In2OutSqsTest(FLAVOR);
+        tester.pushHappyPath2In2OutTest(FLAVOR);
     }
 
     @Test
-    public void notDeletedMessagePutBackSuccessfullySqsTest() throws InterruptedException {
+    public void notDeletedMessagePutBackSuccessfullyFileTest() throws InterruptedException {
 
-        tester.notDeletedMessagePutBackSuccessfullySqsTest(FLAVOR);
+        tester.notDeletedMessagePutBackSuccessfullyTest(FLAVOR);
     }
 
     @Test
-    public void multipleProducersInDifferentThreadsHappyPathSqsTest() {
+    public void multipleProducersInDifferentThreadsHappyPathFileTest() {
 
-        tester.multipleProducersInDifferentThreadsHappyPathSqsTest(FLAVOR);
+        tester.multipleProducersInDifferentThreadsHappyPathTest(FLAVOR);
     }
 
     @Test
-    public void multipleConsumersInDifferentThreadsHappyPath() {
+    public void multipleConsumersInDifferentThreadsHappyPathFileTest() {
 
-        tester.multipleConsumersInDifferentThreadsHappyPath(FLAVOR);
+        tester.multipleConsumersInDifferentThreadsHappyPathTest(FLAVOR);
     }
 }
 

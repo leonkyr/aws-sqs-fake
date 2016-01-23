@@ -11,10 +11,10 @@ public class DefaultMessage implements Message {
      * <p>
      * The duration (in seconds) that the received messages are hidden from
      * subsequent retrieve requests after being retrieved by a
-     * <code>ReceiveMessage</code> request.
      * </p>
      */
     private long visibilityTimeout = DEFAULT_VISIBILITY_TIMEOUT_IN_MILLS;
+    private int requeueCount;
 
     private DefaultMessage(String messageId, String receiptHandle, String body, String MD5OfBody) {
         this.messageId = messageId;
@@ -43,12 +43,20 @@ public class DefaultMessage implements Message {
         return visibilityTimeout;
     }
 
-    public void setReceiptHandle() {
-        this.receiptHandle = generateReceiptHandle();
+    public void setReceiptHandle(String receiptHandle) {
+        this.receiptHandle = receiptHandle;
     }
 
     public void setVisibilityTimeout(long visibilityTimeout) {
         this.visibilityTimeout = visibilityTimeout;
+    }
+
+    public int getRequeueCount() {
+        return requeueCount;
+    }
+
+    public void incrementRequeueCount() {
+        this.requeueCount++;
     }
 
     public static DefaultMessage create(String messageId, String receiptHandle, String body){

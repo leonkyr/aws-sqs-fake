@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.*;
 
-public class InMemoryQueueService implements QueueService, Closeable {
+public class InMemoryQueueService extends BaseLocalQueueService implements Closeable {
     private static final Integer DEFAULT_VISIBILITY_TIMEOUT = 30;
     private static final String NOT_SET_RECEIPT_HANDLE = "";
     private static final int DEFAULT_RETRY_TIMEOUT_IN_MILLS = 100;
@@ -124,17 +124,6 @@ public class InMemoryQueueService implements QueueService, Closeable {
 
     private ConcurrentLinkedQueue<DefaultMessage> getQueuesWithPolledMessagesByName(String queueName) {
         return queuesWithPolledMessages.getOrDefault(queueName, new ConcurrentLinkedQueue<>());
-    }
-
-    private String setReceiptHandleForMessage(DefaultMessage internalMessage) {
-        internalMessage.setReceiptHandle();
-        return internalMessage.getReceiptHandle();
-    }
-
-    private long setVisibilityTimeoutToMessage(Integer visibilityTimeout, DefaultMessage internalMessage) {
-        final long timeout = this.calculateVisibility(visibilityTimeout);
-        internalMessage.setVisibilityTimeout(timeout);
-        return timeout;
     }
 
     private void waitTillTaskExecutedAsync(

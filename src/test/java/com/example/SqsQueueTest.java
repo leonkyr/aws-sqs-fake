@@ -11,7 +11,7 @@ public class SqsQueueTest {
     @Test
     public void pushHappyPathBasicSqsTest() {
 
-        tester.pushHappyPathBasicSqsTest(FLAVOR);
+        tester.pushHappyPathBasicTest(FLAVOR);
     }
 
     @Test
@@ -21,31 +21,31 @@ public class SqsQueueTest {
         /// TODO: occasionally fails due to not guarantied FIFO property
         ///
 
-        tester.pushHappyPath3In2OutSqsTest(FLAVOR);
+        tester.pushHappyPath3In2OutTest(FLAVOR);
     }
 
     @Test
     public void pushHappyPath2In2OutSqsTest() {
 
-        tester.pushHappyPath2In2OutSqsTest(FLAVOR);
+        tester.pushHappyPath2In2OutTest(FLAVOR);
     }
 
     @Test
     public void notDeletedMessagePutBackSuccessfullySqsTest() throws InterruptedException {
 
-        tester.notDeletedMessagePutBackSuccessfullySqsTest(FLAVOR);
+        tester.notDeletedMessagePutBackSuccessfullyTest(FLAVOR);
     }
 
     @Test
     public void multipleProducersInDifferentThreadsHappyPathSqsTest() {
 
-        tester.multipleProducersInDifferentThreadsHappyPathSqsTest(FLAVOR);
+        tester.multipleProducersInDifferentThreadsHappyPathTest(FLAVOR);
     }
 
     @Test
     public void multipleConsumersInDifferentThreadsHappyPath() {
 
-        tester.multipleConsumersInDifferentThreadsHappyPath(FLAVOR);
+        tester.multipleConsumersInDifferentThreadsHappyPathTest(FLAVOR);
     }
 }
 

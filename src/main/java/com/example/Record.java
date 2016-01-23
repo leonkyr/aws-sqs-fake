@@ -28,8 +28,8 @@ public class Record {
 
     public static String create(DefaultMessage message) {
         return create(
-                0,
-                message.generateReceiptHandle(),
+                message.getRequeueCount(),
+                message.getReceiptHandle(),
                 message.getBody(),
                 message.getMD5OfBody(),
                 (int)message.getVisibilityTimeout()/1000
@@ -37,6 +37,9 @@ public class Record {
     }
 
     public static DefaultMessage parse(String line) {
+        if (line == null || line.equals(""))
+            return null;
+
         String[] words = line.split(RECORD_DELIMITER);
         final String[] bodyParts = Arrays.copyOfRange(words, 4, words.length);
         String messageBody = String.join(":", bodyParts);
