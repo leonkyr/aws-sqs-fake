@@ -36,6 +36,11 @@ public class SqsQueueTest {
     }
 
     @Test
+    public void putThrowsWithoutQueueSqsTest(){
+        tester.putThrowsWithoutQueueTest(FLAVOR);
+    }
+
+    @Test
     public void notDeletedMessagePutBackSuccessfullySqsTest() throws InterruptedException {
 
         tester.notDeletedMessagePutBackSuccessfullyTest(FLAVOR);

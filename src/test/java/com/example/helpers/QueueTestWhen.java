@@ -5,6 +5,7 @@ import com.example.QueueService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 
@@ -14,16 +15,16 @@ public final class QueueTestWhen {
     private static final long DEFAULT_PUSH_TIMEOUT_IN_MILLS = 1000;
     private static final long DEFAULT_PULL_TIMEOUT_IN_MILLS = 5 * 1000;
     private final QueueService queueService;
-    private final String queueName;
+    private final String queueUrl;
     private Exception resultedException = null;
     private List<Message> pulledMessages;
     private List<String> pushedMessages;
     private List<Message> deletedMessages;
 
-    public QueueTestWhen(QueueService queueService, String queueName) {
+    public QueueTestWhen(QueueService queueService, String queueUrl) {
 
         this.queueService = queueService;
-        this.queueName = queueName;
+        this.queueUrl = queueUrl;
 
         this.pulledMessages = new CopyOnWriteArrayList<>();
         this.pushedMessages = new CopyOnWriteArrayList<>();
@@ -34,8 +35,8 @@ public final class QueueTestWhen {
         return queueService;
     }
 
-    private String getQueueName() {
-        return queueName;
+    private String getQueueUrl() {
+        return queueUrl;
     }
 
     private List<Message> getPulledMessages() {
@@ -62,7 +63,7 @@ public final class QueueTestWhen {
 
         try {
 
-            getQueueService().push(getQueueName(), message);
+            getQueueService().push(getQueueUrl(), message);
 
             getPushedMessages().add(message);
 
@@ -77,7 +78,7 @@ public final class QueueTestWhen {
     public QueueTestWhen pullAndSave() {
 
         try {
-            Message message = getQueueService().pull(getQueueName());
+            Message message = getQueueService().pull(getQueueUrl());
 
             System.out.println(">>> Stored PULLED message = " + message);
             getPulledMessages().add(message);
@@ -112,13 +113,26 @@ public final class QueueTestWhen {
         return delete(messageToDelete);
     }
 
+    public QueueTestWhen deleteWithForce() {
+        try {
+            getQueueService().delete(
+                    getQueueUrl(),
+                    UUID.randomUUID().toString());
+        } catch (Exception e) {
+            resultedException = e;
+            e.printStackTrace();
+        }
+
+        return this;
+    }
+
     private QueueTestWhen delete(Message messageToDelete) {
         System.out.println("TEST DELETE -> messageToDelete = [" + messageToDelete + "]");
 
         try {
             if (messageToDelete != null) {
                 getQueueService().delete(
-                        getQueueName(),
+                        getQueueUrl(),
                         messageToDelete.getReceiptHandle());
 
                 getPulledMessages().remove(messageToDelete);
@@ -142,7 +156,7 @@ public final class QueueTestWhen {
                 getPushedMessages(),
                 getResultedException(),
                 getQueueService(),
-                getQueueName());
+                getQueueUrl());
         return new QueueTestThen(queueTestWhenResult);
     }
 
@@ -155,7 +169,7 @@ public final class QueueTestWhen {
     public QueueTestWhen pullAndSave(int visibilityTimeout) {
         try {
             Message message = getQueueService()
-                    .pull(getQueueName(), visibilityTimeout);
+                    .pull(getQueueUrl(), visibilityTimeout);
 
             pulledMessages.add(message);
         } catch (Exception e) {
@@ -194,7 +208,7 @@ public final class QueueTestWhen {
     private void publishMessage(String message) {
         System.out.println("-----> message = " + message + ", getPushedMessages().size()" + getPushedMessages().size());
         try {
-            getQueueService().push(getQueueName(), message);
+            getQueueService().push(getQueueUrl(), message);
             getPushedMessages().add(message);
         } catch (Exception e) {
             resultedException = e;

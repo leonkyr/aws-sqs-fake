@@ -35,12 +35,10 @@ public class SqsQueueService implements QueueService {
     }
 
     @Override
-    public void push(String queueName, String messageBody)
+    public void push(String queueUrl, String messageBody)
             throws InterruptedException, IOException {
 
-        logger.w("SQS push -> queueName = [" + queueName + "], messageBody = [" + messageBody + "]");
-
-        String queueUrl = getQueueUrl(queueName);
+        logger.w("SQS push -> queueUrl = [" + queueUrl + "], messageBody = [" + messageBody + "]");
 
         final SendMessageResult sendMessageResult =
                 getSqsClient()
@@ -50,12 +48,10 @@ public class SqsQueueService implements QueueService {
     }
 
     @Override
-    public Message pull(String queueName, Integer visibilityTimeout)
+    public Message pull(String queueUrl, Integer visibilityTimeout)
             throws InterruptedException, IOException {
 
-        logger.w("SQS pull -> queueName = [" + queueName + "], visibilityTimeout = [" + visibilityTimeout + "]");
-
-        String queueUrl = getQueueUrl(queueName);
+        logger.w("SQS pull -> queueUrl = [" + queueUrl + "], visibilityTimeout = [" + visibilityTimeout + "]");
 
         ReceiveMessageRequest receiveMessageRequest = createReceiveMessageRequest(visibilityTimeout, queueUrl);
 
@@ -70,19 +66,30 @@ public class SqsQueueService implements QueueService {
     }
 
     @Override
-    public Message pull(String queueName)
+    public Message pull(String queueUrl)
             throws InterruptedException, IOException {
 
-        return pull(queueName, DEFAULT_VISIBILITY_TIMEOUT);
+        return pull(queueUrl, DEFAULT_VISIBILITY_TIMEOUT);
     }
 
     @Override
-    public void delete(String queueName, String receiptHandle) {
-        logger.w("SQS delete -> queueName = [" + queueName + "], receiptHandle = [" + receiptHandle + "]");
-
-        String queueUrl = getQueueUrl(queueName);
+    public void delete(String queueUrl, String receiptHandle) {
+        logger.w("SQS delete -> queueUrl = [" + queueUrl + "], receiptHandle = [" + receiptHandle + "]");
 
         getSqsClient().deleteMessage(queueUrl, receiptHandle);
+    }
+
+    @Override
+    public String createQueue(String queueName) {
+        final CreateQueueResult createQueueResult = getSqsClient().createQueue(queueName);
+
+        return createQueueResult.getQueueUrl();
+    }
+
+    @Override
+    public void deleteQueue(String queueUrl) {
+
+        getSqsClient().deleteQueue(queueUrl);
     }
 
     private ReceiveMessageRequest createReceiveMessageRequest(Integer visibilityTimeout, String queueUrl) {
@@ -90,12 +97,6 @@ public class SqsQueueService implements QueueService {
         receiveMessageRequest.setVisibilityTimeout(visibilityTimeout);
         receiveMessageRequest.setQueueUrl(queueUrl);
         return receiveMessageRequest;
-    }
-
-    private String getQueueUrl(String queueName) {
-        final CreateQueueResult createQueueResult = getSqsClient().createQueue(queueName);
-
-        return createQueueResult.getQueueUrl();
     }
 
     private Message convert(com.amazonaws.services.sqs.model.Message message) {

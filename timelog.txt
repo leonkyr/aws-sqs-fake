@@ -10,3 +10,5 @@
 23.01 - .2h -> spent time thinking how to make FIFO delivery and re-read README where it stays it is not required (+AWS), prepared package
 
 Total: ~9h
+
+30.01 - 1h -> improvements. 3 issues are DONE

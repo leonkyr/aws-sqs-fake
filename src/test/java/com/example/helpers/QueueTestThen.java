@@ -2,6 +2,7 @@ package com.example.helpers;
 
 import com.example.Message;
 import com.example.QueueService;
+import com.example.exceptions.QueueDoesNotExistException;
 import org.junit.Assert;
 
 import java.util.List;
@@ -32,6 +33,10 @@ public final class QueueTestThen {
         return whenResult.getQueueService();
     }
 
+    private String getQueueUrl() {
+        return whenResult.getQueueUrl();
+    }
+
     public QueueTestThen assertSavedAndDeletedMessage(String messageBody) {
 
         System.out.println("TEST ASSERT -> message = [" + messageBody + "]");
@@ -56,7 +61,7 @@ public final class QueueTestThen {
     public QueueTestThen assertQueueHasNotMessages() {
 
         try {
-            final Message message = getQueueService().pull(whenResult.getQueueName());
+            final Message message = getQueueService().pull(whenResult.getQueueUrl());
             Assert.assertNull("The message with body ["+(message != null ? message.getBody() : "<NULL>")+"] was returned", message);
         } catch (Exception e) {
             e.printStackTrace();
@@ -78,7 +83,7 @@ public final class QueueTestThen {
     public QueueTestThen assertQueueHasMessages() {
 
         try {
-            final Message message = getQueueService().pull(whenResult.getQueueName());
+            final Message message = getQueueService().pull(whenResult.getQueueUrl());
             Assert.assertNotNull("Queue does not have messages", message);
         } catch (Exception e) {
             fail(e.getMessage());
@@ -96,4 +101,14 @@ public final class QueueTestThen {
     }
 
 
+    public QueueTestThen deleteQueue() {
+        getQueueService().deleteQueue(getQueueUrl());
+        return this;
+    }
+
+    public QueueTestThen assertQueueNotExistsExceptionWasThrown() {
+
+        Assert.assertTrue(getResultedException() instanceof QueueDoesNotExistException);
+        return this;
+    }
 }

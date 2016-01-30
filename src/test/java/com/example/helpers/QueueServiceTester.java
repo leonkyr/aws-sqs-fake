@@ -36,7 +36,9 @@ public class QueueServiceTester {
                 .and()
                 .assertSavedAndDeletedMessage(message)
                 .and()
-                .assertQueueHasNotMessages();
+                .assertQueueHasNotMessages()
+                .and()
+                .deleteQueue();
     }
 
     public void pushHappyPath3In2OutTest(String flavor) {
@@ -76,7 +78,9 @@ public class QueueServiceTester {
                 .and()
                 .assertSavedAndDeletedMessage(message2)
                 .and()
-                .assertQueueHasMessages();
+                .assertQueueHasMessages()
+                .and()
+                .deleteQueue();
     }
 
     public void pushHappyPath2In2OutTest(String flavor) {
@@ -113,7 +117,47 @@ public class QueueServiceTester {
                 .and()
                 .assertSavedAndDeletedMessage(message2)
                 .and()
-                .assertQueueHasNotMessages();
+                .assertQueueHasNotMessages()
+                .and()
+                .deleteQueue();
+    }
+
+    public void putThrowsWithoutQueueTest(String flavor) {
+
+        QueueTestGiven given = new QueueTestGiven();
+
+        String message = messageGenerator.generate();
+
+        given
+                .setEnvironmentFlavor(flavor).
+        when()
+                .put(message).
+        then()
+                .assertQueueNotExistsExceptionWasThrown();
+    }
+
+    public void pullThrowsWithoutQueueTest(String flavor) {
+
+        QueueTestGiven given = new QueueTestGiven();
+
+        given
+                .setEnvironmentFlavor(flavor).
+        when()
+                .pullAndSave().
+        then()
+                .assertQueueNotExistsExceptionWasThrown();
+    }
+
+    public void deleteThrowsWithoutQueueTest(String flavor) {
+
+        QueueTestGiven given = new QueueTestGiven();
+
+        given
+                .setEnvironmentFlavor(flavor).
+        when()
+                .deleteWithForce().
+        then()
+                .assertQueueNotExistsExceptionWasThrown();
     }
 
     public void notDeletedMessagePutBackSuccessfullyTest(String flavor) throws InterruptedException {
@@ -142,7 +186,9 @@ public class QueueServiceTester {
         then()
                 .assertThereIsNoException()
                 .and()
-                .assertQueueHasNotMessages();
+                .assertQueueHasNotMessages()
+                .and()
+                .deleteQueue();
     }
 
     public void multipleProducersInDifferentThreadsHappyPathTest(String flavor) {
@@ -165,7 +211,9 @@ public class QueueServiceTester {
         then()
                 .assertThereIsNoException()
                 .and()
-                .assertQueueHasMessageSize(PRODUCERS_COUNT*MESSAGE_COUNT_FOR_A_PRODUCER);
+                .assertQueueHasMessageSize(PRODUCERS_COUNT * MESSAGE_COUNT_FOR_A_PRODUCER)
+                .and()
+                .deleteQueue();
     }
 
     public void multipleConsumersInDifferentThreadsHappyPathTest(String flavor) {
@@ -191,6 +239,8 @@ public class QueueServiceTester {
         then()
                 .assertThereIsNoException()
                 .and()
-                .assertQueueHasNotMessages();
+                .assertQueueHasNotMessages()
+                .and()
+                .deleteQueue();
     }
 }

@@ -28,6 +28,21 @@ public class InMemoryQueueTest {
     }
 
     @Test
+    public void putThrowsWithoutQueueInMemTest(){
+        tester.putThrowsWithoutQueueTest(FLAVOR);
+    }
+
+    @Test
+    public void pullThrowsWithoutQueueInMemTest(){
+        tester.pullThrowsWithoutQueueTest(FLAVOR);
+    }
+
+    @Test
+    public void deleteThrowsWithoutQueueInMemTest(){
+        tester.deleteThrowsWithoutQueueTest(FLAVOR);
+    }
+
+    @Test
     public void notDeletedMessagePutBackSuccessfullyInMemTest() throws InterruptedException {
 
         tester.notDeletedMessagePutBackSuccessfullyTest(FLAVOR);

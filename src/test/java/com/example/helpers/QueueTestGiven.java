@@ -38,8 +38,16 @@ public final class QueueTestGiven {
 
         Assert.assertNotNull(queueService);
 
+        String queueUrl = getQueueName(); // have a queue name, but don't create it if it is empty
+
+        if (getQueueName() != null &&
+            !getQueueName().isEmpty()) {
+            queueService.createQueue(getQueueName());
+            System.out.println("Queue was not created.");
+        }
+
         return new QueueTestWhen(
-                queueService, getQueueName());
+                queueService, queueUrl);
     }
 
     public QueueTestGiven and() {

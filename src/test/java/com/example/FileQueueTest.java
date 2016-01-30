@@ -27,6 +27,11 @@ public class FileQueueTest {
     }
 
     @Test
+    public void putThrowsWithoutQueueFileTest(){
+        tester.putThrowsWithoutQueueTest(FLAVOR);
+    }
+
+    @Test
     public void notDeletedMessagePutBackSuccessfullyFileTest() throws InterruptedException {
 
         tester.notDeletedMessagePutBackSuccessfullyTest(FLAVOR);

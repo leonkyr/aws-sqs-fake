@@ -11,20 +11,20 @@ public class QueueTestWhenResult {
     private final List<String> pushedMessages;
     private final Exception resultedException;
     private final QueueService queueService;
-    private final String queueName;
+    private final String queueUrl;
 
     public QueueTestWhenResult(
             List<Message> deletedMessages,
             List<String> pushedMessages,
             Exception resultedException,
             QueueService queueService,
-            String queueName) {
+            String queueUrl) {
 
         this.deletedMessages = deletedMessages;
         this.pushedMessages = pushedMessages;
         this.resultedException = resultedException;
         this.queueService = queueService;
-        this.queueName = queueName;
+        this.queueUrl = queueUrl;
     }
 
     public List<Message> getDeletedMessages() {
@@ -39,8 +39,8 @@ public class QueueTestWhenResult {
         return queueService;
     }
 
-    public String getQueueName() {
-        return queueName;
+    public String getQueueUrl() {
+        return queueUrl;
     }
 
     public List<String> getPushedMessages() {

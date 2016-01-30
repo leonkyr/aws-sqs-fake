@@ -14,10 +14,6 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
     private static final long DEFAULT_RETRY_TIMEOUT_IN_MILLS = 1000;
     private static final String DATA_DIRECTORY = "sqs";
 
-    private final Logger logger;
-    private final HashCalculator hashCalculator;
-    private final ExecutorService executorService;
-
     public FileQueueService() {
         this(new MD5HashCalculator(), Executors.newSingleThreadExecutor(), new SimpleConsoleLogger());
     }
@@ -27,31 +23,16 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
             HashCalculator hashCalculator,
             ExecutorService executorService,
             Logger logger) {
-        if (hashCalculator == null) {
-            throw new IllegalArgumentException("hashCalculator cannot be null.");
-        }
-        if (executorService == null) {
-            throw new IllegalArgumentException("executorService cannot be null.");
-        }
-        if (logger == null) {
-            throw new IllegalArgumentException("logger cannot be null.");
-        }
 
-        this.hashCalculator = hashCalculator;
-        this.logger = logger;
-        this.executorService = executorService;
-    }
-
-    public HashCalculator getHashCalculator() {
-        return hashCalculator;
+        super(hashCalculator, executorService, logger);
     }
 
     @Override
-    public void push(String queueName, String messageBody) throws InterruptedException, IOException {
-        logger.w("FILE push -> queueName = [" + queueName + "], messageBody = [" + messageBody + "]");
+    public void push(String queueUrl, String messageBody) throws InterruptedException, IOException {
+        getLogger().w("FILE push -> queueName = [" + queueUrl + "], messageBody = [" + messageBody + "]");
 
-        File messagesFile = getMessageFile(queueName, IS_NOT_TEMP_FILE);
-        File lock = getLockFile(queueName);
+        File messagesFile = getMessageFile(queueUrl, IS_NOT_TEMP_FILE);
+        File lock = getLockFile(queueUrl);
         final String hash = getHashCalculator().calculate(messageBody);
 
         lock(lock);
@@ -70,12 +51,12 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
     }
 
     @Override
-    public Message pull(String queueName, Integer visibilityTimeout) throws InterruptedException, IOException {
-        logger.w("FILE pull -> queueName = [" + queueName + "], visibilityTimeout = [" + visibilityTimeout + "]");
+    public Message pull(String queueUrl, Integer visibilityTimeout) throws InterruptedException, IOException {
+        getLogger().w("FILE pull -> queueName = [" + queueUrl + "], visibilityTimeout = [" + visibilityTimeout + "]");
 
-        File messagesFile = getMessageFile(queueName, IS_NOT_TEMP_FILE);
-        File messagesTemporaryFile = getMessageFile(queueName, IS_TEMP_FILE);
-        File lock = getLockFile(queueName);
+        File messagesFile = getMessageFile(queueUrl, IS_NOT_TEMP_FILE);
+        File messagesTemporaryFile = getMessageFile(queueUrl, IS_TEMP_FILE);
+        File lock = getLockFile(queueUrl);
 
         lock(lock);
         DefaultMessage internalMessage,
@@ -96,7 +77,7 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
                         internalMessage.getReceiptHandle().equals("")) {
 
                     resultMessage =
-                            getMessageFromQueueAndScheduleVisibilityCheck(queueName, visibilityTimeout, internalMessage, writer);
+                            getMessageFromQueueAndScheduleVisibilityCheck(queueUrl, visibilityTimeout, internalMessage, writer);
                 }
                 else {
                     // let's write file to the end
@@ -106,7 +87,7 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
         }
         finally {
             final boolean renameResult = messagesTemporaryFile.renameTo(messagesFile);
-            logger.w("Renamed Successfully? " + renameResult);
+            getLogger().w("Renamed Successfully? " + renameResult);
             unlock(lock);
         }
 
@@ -114,18 +95,18 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
     }
 
     @Override
-    public Message pull(String queueName) throws InterruptedException, IOException {
-        return pull(queueName, DEFAULT_VISIBILITY_TIMEOUT_IN_SECONDS);
+    public Message pull(String queueUrl) throws InterruptedException, IOException {
+        return pull(queueUrl, DEFAULT_VISIBILITY_TIMEOUT_IN_SECONDS);
     }
 
     @Override
-    public void delete(String queueName, String receiptHandle)
+    public void delete(String queueUrl, String receiptHandle)
             throws InterruptedException, IOException{
-        logger.w("FILE delete -> queueName = [" + queueName + "], receiptHandle = [" + receiptHandle + "]");
+        getLogger().w("FILE delete -> queueName = [" + queueUrl + "], receiptHandle = [" + receiptHandle + "]");
 
-        File messagesFile = getMessageFile(queueName, IS_NOT_TEMP_FILE);
-        File messagesTemporaryFile = getMessageFile(queueName, IS_TEMP_FILE);
-        File lock = getLockFile(queueName);
+        File messagesFile = getMessageFile(queueUrl, IS_NOT_TEMP_FILE);
+        File messagesTemporaryFile = getMessageFile(queueUrl, IS_TEMP_FILE);
+        File lock = getLockFile(queueUrl);
 
         lock(lock);
         try (BufferedReader reader = new BufferedReader(new FileReader(messagesFile));
@@ -138,7 +119,7 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
 
                     if (internalMessage != null &&
                             internalMessage.getReceiptHandle().equals(receiptHandle)) {
-                        logger.w("DELETED ----> " + line);
+                        getLogger().w("DELETED ----> " + line);
                         deleted = true;
                         continue;
                     }
@@ -149,9 +130,19 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
         }
         finally {
             final boolean renameResult = messagesTemporaryFile.renameTo(messagesFile);
-            logger.w("Renamed Successfully? " + renameResult);
+            getLogger().w("Renamed Successfully? " + renameResult);
             unlock(lock);
         }
+    }
+
+    @Override
+    public String createQueue(String queueName) {
+        return null;
+    }
+
+    @Override
+    public void deleteQueue(String queueUrl) {
+
     }
 
     private DefaultMessage getMessageFromQueueAndScheduleVisibilityCheck(
@@ -170,7 +161,7 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
         String updatedRecord = Record.create(internalMessage);
         writer.println(updatedRecord);
 
-        Future<?> task = executorService.submit(() -> {
+        Future<?> task = getExecutorService().submit(() -> {
             try {
                 verifyVisibilityTimeoutOnDelete(receiptHandle, queueName);
             } catch (InterruptedException e) {
@@ -185,13 +176,13 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
 
     private void printFileContent(File file) {
         try {
-            logger.w("-----" + file.getAbsolutePath() + "------");
+            getLogger().w("-----" + file.getAbsolutePath() + "------");
             try (BufferedReader reader = new BufferedReader(new FileReader(file))){
                 for (String line; (line = reader.readLine()) != null; ) {
-                    logger.w(line);
+                    getLogger().w(line);
                 }
             }
-            logger.w("-----------");
+            getLogger().w("-----------");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -246,7 +237,7 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
         new Thread(() -> {
             try {
                 task.get(timeout, TimeUnit.MILLISECONDS);
-                logger.w("Message was deleted");
+                getLogger().w("Message was deleted");
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             } catch (TimeoutException e) {
@@ -261,7 +252,7 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
                     ex.printStackTrace();
                 }
 
-                logger.w("Message has been put back because it was not deleted.");
+                getLogger().w("Message has been put back because it was not deleted.");
             }
         }).start();
 
@@ -275,7 +266,7 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
         File lock = getLockFile(queueName);
 
         lock(lock);
-        logger.w("Before READD");
+        getLogger().w("Before READD");
         printFileContent(messagesFile);
         try
         {
@@ -295,11 +286,11 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
         }
         finally {
             final boolean renameResult = messagesTemporaryFile.renameTo(messagesFile);
-            logger.w("Renamed Successfully? " + renameResult);
+            getLogger().w("Renamed Successfully? " + renameResult);
             unlock(lock);
         }
 
-        logger.w("After READD");
+        getLogger().w("After READD");
         printFileContent(messagesFile);
     }
 
@@ -359,7 +350,7 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
                     return;
                 }
             } else {
-                logger.w("Message is null");
+                getLogger().w("Message is null");
                 return;
             }
         }
@@ -367,6 +358,6 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
 
     @Override
     public void close() throws IOException {
-        executorService.shutdown();
+        getExecutorService().shutdown();
     }
 }
