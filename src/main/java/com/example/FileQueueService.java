@@ -10,10 +10,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class FileQueueService extends BaseLocalQueueService implements Closeable {
+public class FileQueueService extends BaseLocalQueueService {
 
-    private static final String NOT_SET_RECEIPT_HANDLE = "";
-    private static final int DEFAULT_VISIBILITY_TIMEOUT_IN_SECONDS = 30;
     private static final boolean IS_NOT_TEMP_FILE = false;
     private static final boolean IS_TEMP_FILE = true;
     private static final String DATA_DIRECTORY = "sqs";
@@ -33,23 +31,12 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
     }
 
     @Override
-    public void push(String queueUrl, String messageBody) throws InterruptedException, IOException {
-        getLogger().w("FILE push -> queueUrl = [" + queueUrl + "], messageBody = [" + messageBody + "]");
-
-        validateQueueExists(queueUrl);
-
+    protected void doPush(String queueUrl, DefaultMessage internalMessage) throws IOException, InterruptedException {
         File messagesFile = getMessageFile(queueUrl);
         File lock = getOrCreateLockFile(queueUrl);
 
         lock(lock);
         try (PrintWriter pw = new PrintWriter(new FileWriter(messagesFile, APPEND_TO_FILE))) {
-
-            final DefaultMessage internalMessage =
-                    DefaultMessage.create(
-                            generateMessageId(),
-                            NOT_SET_RECEIPT_HANDLE,
-                            messageBody,
-                            getHashCalculator().calculate(messageBody));
 
             pw.println(Record.create(internalMessage));
 
@@ -59,18 +46,15 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
     }
 
     @Override
-    public Message pull(String queueUrl, Integer visibilityTimeout) throws InterruptedException, IOException {
-        getLogger().w("FILE pull -> queueUrl = [" + queueUrl + "], visibilityTimeout = [" + visibilityTimeout + "]");
-
-        validateQueueExists(queueUrl);
+    protected Message doPull(String queueUrl, Integer visibilityTimeout)
+            throws InterruptedException, IOException {
 
         File messagesFile = getMessageFile(queueUrl);
         File messagesTemporaryFile = getMessageFile(queueUrl, IS_TEMP_FILE);
         File lock = getOrCreateLockFile(queueUrl);
 
         lock(lock);
-        DefaultMessage internalMessage,
-                resultMessage = null;
+        DefaultMessage internalMessage, resultMessage = null;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(messagesFile));
              PrintWriter writer = new PrintWriter(new FileWriter(messagesTemporaryFile, true))) {  // append
@@ -82,7 +66,8 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
                 if (internalMessage == null)
                     return resultMessage;
 
-                resultMessage = processRecordOnPull(queueUrl, visibilityTimeout, internalMessage, resultMessage, writer, line);
+                resultMessage =
+                        processRecordOnPull(queueUrl, visibilityTimeout, internalMessage, resultMessage, writer, line);
             }
         }
         finally {
@@ -139,16 +124,8 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
     }
 
     @Override
-    public Message pull(String queueUrl) throws InterruptedException, IOException {
-        return pull(queueUrl, DEFAULT_VISIBILITY_TIMEOUT_IN_SECONDS);
-    }
-
-    @Override
-    public void delete(String queueUrl, String receiptHandle)
+    protected void doDelete(String queueUrl, String receiptHandle)
             throws InterruptedException, IOException{
-        getLogger().w("FILE delete -> queueUrl = [" + queueUrl + "], receiptHandle = [" + receiptHandle + "]");
-
-        validateQueueExists(queueUrl);
 
         File messagesFile = getMessageFile(queueUrl);
         File messagesTemporaryFile = getMessageFile(queueUrl, IS_TEMP_FILE);
@@ -165,7 +142,6 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
 
                     if (internalMessage != null &&
                             internalMessage.getReceiptHandle().equals(receiptHandle)) {
-                        getLogger().w("DELETED ----> " + line);
                         deleted = true;
                         continue;
                     }
@@ -182,8 +158,8 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
     }
 
     @Override
-    public String createQueue(String queueName) {
-        String messagesFilePath = String.format("%s/%s/messages", DATA_DIRECTORY, queueName);
+    protected String doCreateQueue(String queueName) {
+        String messagesFilePath = getMessageFilePath(queueName);
 
         try {
             createFile(messagesFilePath);
@@ -195,9 +171,13 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
         return queueName;
     }
 
+    private String getMessageFilePath(String queueName) {
+        return String.format("%s/%s/messages", DATA_DIRECTORY, queueName);
+    }
+
     @Override
-    public void deleteQueue(String queueUrl) {
-        String messagesFilePath = String.format("%s/%s/messages", DATA_DIRECTORY, queueUrl);
+    protected void doDeleteQueue(String queueUrl) {
+        String messagesFilePath = getMessageFilePath(queueUrl);
         String parentDirectory = String.format("%s/%s", DATA_DIRECTORY, queueUrl);
 
         try {
@@ -210,6 +190,20 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
         }
     }
 
+    @Override
+    protected void validateQueue(String queueUrl) {
+
+        String messagesFilePath = getMessageFilePath(queueUrl);
+
+        File targetFile = new File(messagesFilePath);
+        File parent = targetFile.getParentFile();
+
+        if (queueUrl == null ||
+                queueUrl.isEmpty() ||
+                !parent.exists()) {
+            throw new QueueDoesNotExistException("Queue " + queueUrl + " does not exist.");
+        }
+    }
 
     private void printFileContent(File file) {
         try {
@@ -233,20 +227,6 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
 
     private void unlock(File lock) {
         lock.delete();
-    }
-
-    private void validateQueueExists(String queueUrl) {
-
-        String messagesFilePath = String.format("%s/%s/messages", DATA_DIRECTORY, queueUrl);
-
-        File targetFile = new File(messagesFilePath);
-        File parent = targetFile.getParentFile();
-
-        if (queueUrl == null ||
-                queueUrl.isEmpty() ||
-                !parent.exists()) {
-            throw new QueueDoesNotExistException("Queue " + queueUrl + " does not exist.");
-        }
     }
 
     private File getOrCreateLockFile(String queueName) throws IOException {
@@ -284,7 +264,7 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
     private void readdMessageToQueueAfterTimeoutedPull(String queueName, DefaultMessage message)
             throws InterruptedException, IOException {
 
-        File messagesFile = getMessageFile(queueName, IS_NOT_TEMP_FILE);
+        File messagesFile = getMessageFile(queueName);
         File messagesTemporaryFile = getMessageFile(queueName, IS_TEMP_FILE);
         File lock = getOrCreateLockFile(queueName);
 
@@ -340,13 +320,13 @@ public class FileQueueService extends BaseLocalQueueService implements Closeable
             final String receiptHandle,
             final String queueUrl) throws InterruptedException, IOException {
 
-        File messagesFile = getMessageFile(queueUrl, IS_NOT_TEMP_FILE);
+        File messagesFile = getMessageFile(queueUrl);
         File lock = getOrCreateLockFile(queueUrl);
 
         lock(lock);
 
         DefaultMessage messageToDelete = null;
-        try (BufferedReader reader = new BufferedReader(new FileReader(messagesFile))) {  // append
+        try (BufferedReader reader = new BufferedReader(new FileReader(messagesFile))) {
 
             for (String line; (line = reader.readLine()) != null;) {
                 messageToDelete = Record.parse(line);

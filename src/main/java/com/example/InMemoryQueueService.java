@@ -8,8 +8,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 public class InMemoryQueueService extends BaseLocalQueueService {
-    private static final Integer DEFAULT_VISIBILITY_TIMEOUT = 30;
-    private static final String NOT_SET_RECEIPT_HANDLE = "";
+
     private static final int DEFAULT_THREAD_COUNT = 5;
 
     private final Map<String, List<DefaultMessage>> queues =
@@ -32,21 +31,7 @@ public class InMemoryQueueService extends BaseLocalQueueService {
     }
 
     @Override
-    public void push(String queueUrl, String messageBody)
-            throws InterruptedException, IOException {
-
-        getLogger().w("INMEM push -> queueName = [" + queueUrl + "], messageBoy = [" + messageBody + "]");
-
-        validateQueues(queueUrl);
-
-        final DefaultMessage internalMessage =
-                DefaultMessage.create(
-                        generateMessageId(),
-                        NOT_SET_RECEIPT_HANDLE,
-                        messageBody,
-                        getHashCalculator().calculate(messageBody));
-
-        getLogger().w("PUSHED internalMessage = " + internalMessage);
+    public void doPush(String queueUrl, DefaultMessage internalMessage) {
 
         queues
                 .get(queueUrl)
@@ -54,20 +39,8 @@ public class InMemoryQueueService extends BaseLocalQueueService {
     }
 
     @Override
-    public Message pull(String queueUrl)
+    protected Message doPull(String queueUrl, Integer visibilityTimeout)
             throws InterruptedException, IOException {
-
-        return pull(queueUrl, DEFAULT_VISIBILITY_TIMEOUT);
-    }
-
-    @Override
-    public Message pull(String queueUrl, Integer visibilityTimeout)
-            throws InterruptedException, IOException {
-        // we don't care that a consumer make consume multiple message at the same time
-
-        getLogger().w("INMEM pull -> queueUrl = [" + queueUrl + "]");
-
-        validateQueues(queueUrl);
 
         List<DefaultMessage> queue = queues.get(queueUrl);
 
@@ -81,44 +54,49 @@ public class InMemoryQueueService extends BaseLocalQueueService {
 
         final DefaultMessage internalMessage = queue.remove(0);
 
-        final long timeout = setVisibilityTimeoutToMessage(visibilityTimeout, internalMessage);
+        setVisibilityTimeoutToMessage(visibilityTimeout, internalMessage);
         final String receiptHandle = setReceiptHandleForMessage(internalMessage);
         queueWithPolled.add(internalMessage);
 
-        getScheduledExecutorService()
-                .schedule(
-                        () -> {
-                            DefaultMessage msg = queueWithPolled
-                                    .stream()
-                                    .filter(m -> m.getReceiptHandle().equals(receiptHandle))
-                                    .findFirst()
-                                    .orElseGet(() -> null);
-
-                            // message was NOT deleted
-                            if (msg != null) {
-                                // let me put it back
-                                queueWithPolled.remove(internalMessage);
-                                //  at the head
-                                queue.add(0, internalMessage);
-                            }
-                        },
-                        timeout, TimeUnit.SECONDS);
+        scheduleMessageDeleteVerification(queue, queueWithPolled, internalMessage, receiptHandle);
 
         getLogger().w("PULLED internalMessage = " + internalMessage);
         return internalMessage;
     }
 
-    @Override
-    public void delete(String queueUrl, String receiptHandle) {
-        getLogger().w("INMEM delete -> queueName = [" + queueUrl + "], receiptHandle = [" + receiptHandle + "]");
-        validateQueues(queueUrl);
+    private void scheduleMessageDeleteVerification(
+            List<DefaultMessage> queue, List<DefaultMessage> queueWithPolled,
+            DefaultMessage internalMessage, String receiptHandle) {
 
-        final List<DefaultMessage> queueWithPolled = queuesWithPolledMessages.get(queueUrl);
+        getScheduledExecutorService()
+            .schedule(
+                    () -> {
+                        DefaultMessage msg = queueWithPolled
+                                .stream()
+                                .filter(m -> m.getReceiptHandle().equals(receiptHandle))
+                                .findFirst()
+                                .orElseGet(() -> null);
 
-        queueWithPolled.removeIf(msg -> msg.getReceiptHandle().equals(receiptHandle));
+                        // message was NOT deleted
+                        if (msg != null) {
+                            // let me put it back
+                            queueWithPolled.remove(internalMessage);
+                            //  at the head
+                            queue.add(0, internalMessage);
+                        }
+                    },
+                    internalMessage.getVisibilityTimeout(), TimeUnit.SECONDS);
     }
 
-    private void validateQueues(String queueUrl) {
+    @Override
+    protected void doDelete(String queueUrl, String receiptHandle) {
+
+        queuesWithPolledMessages.get(queueUrl)
+                .removeIf(msg -> msg.getReceiptHandle().equals(receiptHandle));
+    }
+
+    @Override
+    protected void validateQueue(String queueUrl) {
         if (queueUrl == null ||
                 queueUrl.isEmpty() ||
                 !queues.containsKey(queueUrl) ||
@@ -128,7 +106,7 @@ public class InMemoryQueueService extends BaseLocalQueueService {
     }
 
     @Override
-    public String createQueue(String queueName) {
+    protected String doCreateQueue(String queueName) {
         queues.computeIfAbsent(queueName, key -> new CopyOnWriteArrayList<>());
         queuesWithPolledMessages.computeIfAbsent(queueName, key -> new CopyOnWriteArrayList<>());
 
@@ -136,7 +114,7 @@ public class InMemoryQueueService extends BaseLocalQueueService {
     }
 
     @Override
-    public void deleteQueue(String queueUrl) {
+    protected void doDeleteQueue(String queueUrl) {
         queues.remove(queueUrl);
         queuesWithPolledMessages.remove(queueUrl);
     }

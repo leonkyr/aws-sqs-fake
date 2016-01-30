@@ -68,6 +68,21 @@ public class DefaultMessage implements Message {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        boolean result = false;
+        if (obj instanceof DefaultMessage) {
+            DefaultMessage other = (DefaultMessage)obj;
+
+            result = getMD5OfBody().equals(other.getMD5OfBody()) &&
+                    getMessageId().equals(other.getMessageId()) &&
+                    getReceiptHandle().equals(other.getReceiptHandle()) &&
+                    getBody().equals(other.getBody());
+        }
+
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "DefaultMessage{" +
                 "messageId='" + messageId + '\'' +

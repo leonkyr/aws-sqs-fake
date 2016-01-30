@@ -108,7 +108,8 @@ public final class QueueTestThen {
 
     public QueueTestThen assertQueueNotExistsExceptionWasThrown() {
 
-        Assert.assertTrue(getResultedException() instanceof QueueDoesNotExistException);
+        Assert.assertTrue(getResultedException() instanceof QueueDoesNotExistException ||
+            getResultedException() instanceof com.amazonaws.services.sqs.model.QueueDoesNotExistException);
         return this;
     }
 }
