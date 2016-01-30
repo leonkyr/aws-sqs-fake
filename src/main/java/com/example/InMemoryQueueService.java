@@ -10,7 +10,7 @@ import java.util.concurrent.*;
 public class InMemoryQueueService extends BaseLocalQueueService {
     private static final Integer DEFAULT_VISIBILITY_TIMEOUT = 30;
     private static final String NOT_SET_RECEIPT_HANDLE = "";
-    private static final int DEFAULT_RETRY_TIMEOUT_IN_MILLS = 100;
+    private static final int DEFAULT_THREAD_COUNT = 5;
 
     private final Map<String, List<DefaultMessage>> queues =
             new ConcurrentHashMap<>();
@@ -22,13 +22,13 @@ public class InMemoryQueueService extends BaseLocalQueueService {
     // constructor for DI Container (f.e. Spring)
     public InMemoryQueueService(
             HashCalculator hashCalculator,
-            ExecutorService executorService,
+            ScheduledExecutorService scheduledExecutorService,
             Logger logger) {
-        super(hashCalculator, executorService, logger);
+        super(hashCalculator, scheduledExecutorService, logger);
     }
 
     public InMemoryQueueService(){
-        this(new MD5HashCalculator(), Executors.newSingleThreadExecutor(), new SimpleConsoleLogger());
+        this(new MD5HashCalculator(), Executors.newScheduledThreadPool(DEFAULT_THREAD_COUNT), new SimpleConsoleLogger());
     }
 
     @Override
@@ -65,7 +65,7 @@ public class InMemoryQueueService extends BaseLocalQueueService {
             throws InterruptedException, IOException {
         // we don't care that a consumer make consume multiple message at the same time
 
-        getLogger().w("INMEM pull -> queueName = [" + queueUrl + "]");
+        getLogger().w("INMEM pull -> queueUrl = [" + queueUrl + "]");
 
         validateQueues(queueUrl);
 
@@ -83,13 +83,26 @@ public class InMemoryQueueService extends BaseLocalQueueService {
 
         final long timeout = setVisibilityTimeoutToMessage(visibilityTimeout, internalMessage);
         final String receiptHandle = setReceiptHandleForMessage(internalMessage);
-
-        Future<?> task = getExecutorService().submit(() ->
-                verifyVisibilityTimeoutOnDelete(receiptHandle, queueWithPolled));
-
-        waitTillTaskExecutedAsync(queue, queueWithPolled, internalMessage, timeout, task);
-
         queueWithPolled.add(internalMessage);
+
+        getScheduledExecutorService()
+                .schedule(
+                        () -> {
+                            DefaultMessage msg = queueWithPolled
+                                    .stream()
+                                    .filter(m -> m.getReceiptHandle().equals(receiptHandle))
+                                    .findFirst()
+                                    .orElseGet(() -> null);
+
+                            // message was NOT deleted
+                            if (msg != null) {
+                                // let me put it back
+                                queueWithPolled.remove(internalMessage);
+                                //  at the head
+                                queue.add(0, internalMessage);
+                            }
+                        },
+                        timeout, TimeUnit.SECONDS);
 
         getLogger().w("PULLED internalMessage = " + internalMessage);
         return internalMessage;
@@ -110,7 +123,7 @@ public class InMemoryQueueService extends BaseLocalQueueService {
                 queueUrl.isEmpty() ||
                 !queues.containsKey(queueUrl) ||
                 !queuesWithPolledMessages.containsKey(queueUrl)) {
-            throw new QueueDoesNotExistException("");
+            throw new QueueDoesNotExistException("Queue " + queueUrl + " does not exist.");
         }
     }
 
@@ -126,59 +139,5 @@ public class InMemoryQueueService extends BaseLocalQueueService {
     public void deleteQueue(String queueUrl) {
         queues.remove(queueUrl);
         queuesWithPolledMessages.remove(queueUrl);
-    }
-
-    private void waitTillTaskExecutedAsync(
-            final List<DefaultMessage> queue,
-            final List<DefaultMessage> queueWithPolled,
-            final DefaultMessage internalMessage,
-            final long timeout,
-            Future<?> task) {
-
-        // simple way to do async wait..
-        new Thread(() -> {
-            try {
-                task.get(timeout, TimeUnit.MILLISECONDS);
-                getLogger().w("Message was deleted");
-            } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
-            } catch (TimeoutException e) {
-                e.printStackTrace();
-                task.cancel(true);
-                // re-add message at the beginning
-                queueWithPolled.remove(internalMessage);
-                queue.add(0, internalMessage);
-                getLogger().w("Message has been put back because it was not deleted.");
-            }
-        }).start();
-
-    }
-
-    private void verifyVisibilityTimeoutOnDelete(
-            final String receiptHandle,
-            final List<DefaultMessage> queueWithPolled) {
-
-        while (!Thread.currentThread().isInterrupted()) {
-
-            DefaultMessage msg = queueWithPolled
-                    .stream()
-                    .filter(m -> m.getReceiptHandle().equals(receiptHandle))
-                    .findFirst()
-                    .orElseGet(() -> null);
-
-            // message was delete. Excellent!
-            if (msg != null) {
-                // let's wait and check again
-                try {
-                    Thread.sleep(DEFAULT_RETRY_TIMEOUT_IN_MILLS);
-                } catch (InterruptedException e) {
-                    // I was asked to stop
-                    return;
-                }
-            } else {
-                getLogger().w("Message is null");
-                return;
-            }
-        }
     }
 }

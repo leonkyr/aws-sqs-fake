@@ -2,26 +2,26 @@ package com.example;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 public abstract class BaseLocalQueueService implements QueueService, Closeable {
 
     private final HashCalculator hashCalculator;
     private final Logger logger;
-    private final ExecutorService executorService;
+    private final ScheduledExecutorService scheduledExecutorService;
     private final MessageIdGenerator messageIdGenerator;
 
     // for DI
     public BaseLocalQueueService(
             HashCalculator hashCalculator,
-            ExecutorService executorService,
+            ScheduledExecutorService scheduledExecutorService,
             Logger logger) {
 
         if (hashCalculator == null) {
             throw new IllegalArgumentException("hashCalculator cannot be null.");
         }
-        if (executorService == null) {
-            throw new IllegalArgumentException("executorService cannot be null.");
+        if (scheduledExecutorService == null) {
+            throw new IllegalArgumentException("scheduledExecutorService cannot be null.");
         }
         if (logger == null) {
             throw new IllegalArgumentException("logger cannot be null.");
@@ -29,7 +29,7 @@ public abstract class BaseLocalQueueService implements QueueService, Closeable {
 
         this.hashCalculator = hashCalculator;
         this.logger = logger;
-        this.executorService = executorService;
+        this.scheduledExecutorService = scheduledExecutorService;
         this.messageIdGenerator = new SecureMessageIdGenerator(); // Dependency Injection later
     }
 
@@ -41,8 +41,8 @@ public abstract class BaseLocalQueueService implements QueueService, Closeable {
         return logger;
     }
 
-    protected ExecutorService getExecutorService() {
-        return executorService;
+    protected ScheduledExecutorService getScheduledExecutorService() {
+        return scheduledExecutorService;
     }
 
     private MessageIdGenerator getMessageIdGenerator() {
@@ -70,7 +70,7 @@ public abstract class BaseLocalQueueService implements QueueService, Closeable {
 
     @Override
     public void close() throws IOException {
-        getExecutorService().shutdown();
+        getScheduledExecutorService().shutdown();
     }
 }
 
