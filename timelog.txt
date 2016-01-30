@@ -12,3 +12,4 @@
 Total: ~9h
 
 30.01 - 1h -> improvements. 3 issues are DONE
+30.01 - 1h -> fixed other issues (thread, multilines etc)
