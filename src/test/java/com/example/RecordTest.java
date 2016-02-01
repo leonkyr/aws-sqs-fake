@@ -21,14 +21,8 @@ public class RecordTest {
 
         String record = Record.create(message);
 
-        System.out.println();
-        System.out.println("record = " + record);
-
         final DefaultMessage parsedMessage = Record.parse(record);
 
-        System.out.println();
-        System.out.println("parsedMessage = " + parsedMessage);
-
-        Assert.assertTrue(message.equals(parsedMessage));
+        Assert.assertTrue("Parsed message is not equal to original message", message.equals(parsedMessage));
     }
 }
